@@ -207,10 +207,8 @@
 
   function setSelectedEnvTag(tag) {
     $("#genEnv").val(tag);
-  });
   }
-
-  function getEndpointType(which) {
+function getEndpointType(which) {
     return ($(`#gen${which}Type`).val() || "server").trim();
   }
 
@@ -230,12 +228,7 @@
       refreshEndpointSelectors();
       refreshViaVlanOptions();
     });
-      setSelectedEnvTag(tag);
-      refreshEndpointSelectors();
-      refreshViaVlanOptions();
-    });
-
-    // Segmented sliders
+      // Segmented sliders
     $("#generatorView").off("click.genSwitch").on("click.genSwitch", ".x4TypeSlider button", function () {
       const $btn = $(this);
       const val = $btn.attr("data-val");

@@ -7,7 +7,7 @@
   - Persists into Servers: server.routes[] and server.firewallRules[]
 
   UI rules (2026-01-30):
-  - Environment: tags, single-select
+  - Environment: dropdown
   - Source/Target: slider (Server/VLAN) + dropdown filtered by env
   - Route via: required; if only one route-via VLAN is available it is auto-selected
   - Firewall "suggestions" toggle removed (rules are always generated)
@@ -27,11 +27,9 @@
     const prereq = checkPrerequisites();
     const isBlocked = !prereq.ok;
 
-    const envTags = (window.CFG.envs || []).map(e => e.tag);
-    const envTagButtons = envTags.map(t => {
-      return window.X4Modal?.renderToggleTag
-        ? window.X4Modal.renderToggleTag(t, false, { env: t, single: "genEnv" })
-        : `<div class="tag off" data-toggle="1" data-env="${window.x4EscapeAttr(t)}" data-single="genEnv"><span class="name">${window.x4EscapeHtml(t)}</span><span class="state">✖</span></div>`;
+    const envOptions = (window.CFG.envs || []).map(e => {
+      const label = `${e.name || e.tag} (${e.tag})`;
+      return `<option value="${window.x4EscapeAttr(e.tag)}">${window.x4EscapeHtml(label)}</option>`;
     }).join("");
 
     const html = `
@@ -40,17 +38,25 @@
         <div class="card">
           <div class="hd">
             <h2>Firewall & Routen</h2>
-            <div class="hint">Erzeugt bidirektionale Firewall-Regeln + Hin- und Rück-Routen und speichert sie in den Server-Items.</div>
+            <div class="hint">Erzeugt Firewall-Regeln + Hin- und Rück-Routen und speichert sie in den Server-Items.</div>
           </div>
 
           <div class="bd">
 
-            <div style="margin-bottom:10px">
-              <label class="req">Umgebung</label>
-              <input id="genEnv" type="hidden" required data-x4-label="Umgebung" value="" />
-              <div id="genEnvTags" class="tagGrid single" data-single="genEnv">${envTagButtons}</div>
-              <div class="hint small">Nur eine Umgebung auswählbar.</div>
-            </div>
+            <div class="two" style="margin-bottom:10px">
+  <div>
+    <label class="req" for="genEnv">Umgebung</label>
+    <select id="genEnv" required data-x4-label="Umgebung">${envOptions}</select>
+  </div>
+  <div>
+    <label>&nbsp;</label>
+    <label class="x4CheckRow" style="margin:0; display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" id="genBidir" />
+      <span>Firewall-Regeln bidirektional</span>
+    </label>
+    <div class="hint small">Standard: aus (nur Quelle → Ziel).</div>
+  </div>
+</div>
 
             <div class="sectionTtl">Quelle</div>
             <div class="two" style="margin-bottom:10px">
@@ -201,13 +207,7 @@
 
   function setSelectedEnvTag(tag) {
     $("#genEnv").val(tag);
-    // visual single select
-    $("#genEnvTags .tag").each(function () {
-      const t = $(this).find(".name").text().trim();
-      const on = t === tag;
-      $(this).toggleClass("on", on).toggleClass("off", !on);
-      $(this).find(".state").text(on ? "✔" : "✖");
-    });
+  });
   }
 
   function getEndpointType(which) {
@@ -225,9 +225,11 @@
   }
 
   function bindGeneratorEvents() {
-    // Environment tags: enforce single select
-    $("#genEnvTags").off("click").on("click", ".tag", function () {
-      const tag = $(this).find(".name").text().trim();
+    // Environment select
+    $("#genEnv").off("change").on("change", function () {
+      refreshEndpointSelectors();
+      refreshViaVlanOptions();
+    });
       setSelectedEnvTag(tag);
       refreshEndpointSelectors();
       refreshViaVlanOptions();
@@ -588,8 +590,11 @@
     const routesText = formatRoutes(routesByServer, env);
 
     // Firewall rules per selected service port item, bidirectional
-    const fwByServer = buildFirewallForServicesBidirectional(src, dst, env, GEN_STATE.services, viaVlan);
-    const fwText = formatFirewallRules(fwByServer, env);
+    const bidir = !!$("#genBidir").prop("checked");
+    const fwByServer = bidir
+      ? buildFirewallForServicesBidirectional(src, dst, env, GEN_STATE.services, viaVlan)
+      : buildFirewallForServicesForward(src, dst, env, GEN_STATE.services, viaVlan);
+        const fwText = formatFirewallRules(fwByServer, env, bidir);
 
     const csv = buildCsv(routesByServer, env, srcType, srcVal, dstType, dstVal);
     return { routesText, fwText, csv, routesByServer, fwByServer };
@@ -794,7 +799,48 @@
     return lines.join("\n");
   }
 
-  /* ------------------ Firewall generation (bidirectional, per service) ------------------ */
+  
+  function buildFirewallForServicesForward(src, dst, envTag, serviceEntries, viaVlanHint) {
+    const merged = new Map();
+    const mergeIn = (part) => {
+      for (const [name, items] of (part || new Map()).entries()) {
+        if (!merged.has(name)) merged.set(name, []);
+        merged.get(name).push(...items);
+      }
+    };
+
+    (serviceEntries || []).forEach(se => {
+      const proto = String(se.proto || "tcp").toLowerCase();
+      const ports = String(se.ports || "").trim();
+      const comment = String(se.comment || se.serviceName || "").trim();
+      mergeIn(buildFirewallItemsForward(src, dst, envTag, proto, ports, comment, viaVlanHint));
+    });
+
+    return merged;
+  }
+
+  // Forward firewall items only:
+  // src -> dst  (src: output, dst: input)
+  function buildFirewallItemsForward(src, dst, envTag, proto, ports, comment, viaVlanHint) {
+    const byServer = new Map();
+    const add = (name, item) => {
+      if (!byServer.has(name)) byServer.set(name, []);
+      byServer.get(name).push(item);
+    };
+
+    const srcAddr = endpointToAddr(src, viaVlanHint);
+    const dstAddr = endpointToAddr(dst, viaVlanHint);
+
+    const protos = (proto === "tcp/udp") ? ["tcp", "udp"] : [proto];
+    protos.forEach(p => {
+      src.servers.forEach(srv => add(srv.name, { dir: "out", src: srcAddr, dst: dstAddr, proto: p, ports: ports || "", envTag, comment: comment || "" }));
+      dst.servers.forEach(srv => add(srv.name, { dir: "in", src: srcAddr, dst: dstAddr, proto: p, ports: ports || "", envTag, comment: comment || "" }));
+    });
+
+    return byServer;
+  }
+
+/* ------------------ Firewall generation (bidirectional, per service) ------------------ */
 
   function buildFirewallForServicesBidirectional(src, dst, envTag, serviceEntries, viaVlanHint) {
     const merged = new Map();
@@ -849,9 +895,9 @@
     return ip ? `${ip}/32` : "<server-ip>/32";
   }
 
-  function formatFirewallRules(fwByServer, envTag) {
+  function formatFirewallRules(fwByServer, envTag, bidir) {
     const lines = [];
-    lines.push(`# Firewall — bidirektionale Regeln (Env: ${envTag})`);
+    lines.push(`# Firewall — ${bidir ? "bidirektional" : "einseitig"} (Env: ${envTag})`);
     lines.push("");
 
     const servers = Array.from((fwByServer || new Map()).keys()).sort();

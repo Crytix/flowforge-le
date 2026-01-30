@@ -44,19 +44,20 @@
           <div class="bd">
 
             <div class="two" style="margin-bottom:10px">
-  <div>
-    <label class="req" for="genEnv">Umgebung</label>
-    <select id="genEnv" required data-x4-label="Umgebung">${envOptions}</select>
-  </div>
-  <div>
-    <label>&nbsp;</label>
-    <label class="x4CheckRow" style="margin:0; display:flex; align-items:center; gap:8px;">
-      <input type="checkbox" id="genBidir" />
-      <span>Firewall-Regeln bidirektional</span>
-    </label>
-    <div class="hint small">Standard: aus (nur Quelle → Ziel).</div>
-  </div>
-</div>
+              <div>
+                <label>Firewall</label>
+                <label class="x4Switch" for="genBidir" style="margin-top:6px">
+                  <input type="checkbox" id="genBidir" />
+                  <span class="x4SwitchTrack" aria-hidden="true"><span class="x4SwitchThumb"></span></span>
+                  <span class="x4SwitchText">Bidirektional</span>
+                </label>
+                <div class="hint small">Standard: aus (nur Quelle → Ziel).</div>
+              </div>
+              <div>
+                <label class="req" for="genEnv">Umgebung</label>
+                <select id="genEnv" required data-x4-label="Umgebung">${envOptions}</select>
+              </div>
+            </div>
 
             <div class="sectionTtl">Quelle</div>
             <div class="two" style="margin-bottom:10px">

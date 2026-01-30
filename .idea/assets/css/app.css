@@ -344,3 +344,70 @@ label.req::after{
 .x4TypeSlider button.on{color:var(--text)}
 .x4TypeSlider button:focus{outline:none}
 .x4TypeSlider button:hover{color:var(--text)}
+
+/* Generator: ON/OFF switch (matches slider style) */
+.x4Switch{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  user-select:none;
+}
+.x4Switch input{position:absolute; opacity:0; pointer-events:none;}
+.x4SwitchTrack{
+  width:52px;
+  height:32px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.03);
+  position:relative;
+  box-shadow:0 0 0 1px rgba(0,0,0,.12) inset;
+  transition:background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.x4SwitchTrack::before,
+.x4SwitchTrack::after{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.02em;
+  color:var(--muted);
+  opacity:.65;
+  pointer-events:none;
+}
+.x4SwitchTrack::before{content:"OFF"; left:8px;}
+.x4SwitchTrack::after{content:"ON"; right:8px;}
+.x4SwitchThumb{
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  background:rgba(255,255,255,.10);
+  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset;
+  transform:translateX(0);
+  transition:transform .18s ease, background .18s ease;
+}
+.x4SwitchText{
+  font-weight:700;
+  font-size:12px;
+  color:var(--muted);
+}
+.x4Switch input:checked + .x4SwitchTrack{
+  background:rgba(56,189,248,.12);
+  border-color:rgba(56,189,248,.35);
+  box-shadow:0 0 0 3px rgba(56,189,248,.06);
+}
+.x4Switch input:checked + .x4SwitchTrack::before{opacity:.35;}
+.x4Switch input:checked + .x4SwitchTrack::after{opacity:.85; color:var(--text);}
+.x4Switch input:checked + .x4SwitchTrack .x4SwitchThumb{
+  transform:translateX(20px);
+  background:rgba(56,189,248,.18);
+}
+.x4Switch input:checked ~ .x4SwitchText{color:var(--text)}
+.x4Switch:hover .x4SwitchText{color:var(--text)}
+.x4Switch:focus-within .x4SwitchTrack{
+  box-shadow:0 0 0 3px rgba(56,189,248,.10);
+}

@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Services View (modal-based)
+  FlowForge LE — Services View (modal-based)
 
   Refactor:
   - Consistent tables (display-only)
@@ -23,7 +23,7 @@
         <div class="bd" style="overflow:auto">
           ${renderTable()}
           <div class="hint small" style="margin-top:10px">
-            Hinweis: Services sind reine Definitionen. Die Zuordnung zu Servern erfolgt im Bereich „Server“.
+            Note: Services are pure definitions. Assignment to servers happens in the “Servers” section.
           </div>
         </div>
       </div>
@@ -54,12 +54,12 @@
           <tr>
             <th>Service Name</th>
             <th>Ports / Ranges</th>
-            <th>Kommentar</th>
+            <th>Comment</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          ${rows || `<tr><td colspan="4" class="hint">Keine Services.</td></tr>`}
+          ${rows || `<tr><td colspan="4" class="hint">No services.</td></tr>`}
         </tbody>
       </table>
     `;
@@ -93,7 +93,7 @@
         if (action === "delete") {
           const item = (window.CFG.services || [])[idx];
           const name = item?.name || "";
-          if (!confirm(`"${name}" wirklich löschen?`)) return;
+          if (!confirm(`"${name}" delete this item?`)) return;
           window.CFG.services.splice(idx, 1);
           window.saveConfig();
           window.renderServicesView();
@@ -122,8 +122,8 @@
           <input id="mSvcName" required data-x4-label="Name" value="${x4EscapeAttr(item.name)}" placeholder="z.B. Postgres" />
         </div>
         <div>
-          <label for="mSvcComment">Kommentar</label>
-          <input id="mSvcComment" required data-x4-label="Kommentar" value="${x4EscapeAttr(item.comment)}" placeholder="z.B. Datenbank Zugriff" />
+          <label for="mSvcComment">Comment</label>
+          <input id="mSvcComment" required data-x4-label="Comment" value="${x4EscapeAttr(item.comment)}" placeholder="e.g. database access" />
         </div>
       </div>
 
@@ -137,7 +137,7 @@
           </div>
 
           <div class="hint small" style="margin-bottom:8px">
-            Lege mehrere Einträge an. Pro Eintrag wählst du das Protokoll (TCP / UDP / TCP/UDP) und gibst den Portwert an.
+            Add one or more entries. For each entry select a protocol (TCP / UDP / TCP/UDP) and enter the port value.
             Beispiele: <span class="mono">22</span> · <span class="mono">80,443</span> · <span class="mono">20000-20100</span>
           </div>
 
@@ -147,14 +147,14 @@
     `;
 
     window.X4Modal.open({
-      title: isEdit ? "Service bearbeiten" : "Service anlegen",
+      title: isEdit ? "Edit service" : "Create service",
       bodyHtml: body,
       onSave: () => {
         const req = window.x4ValidateRequired("#x4ModalBack");
         if (!req.ok) return req;
 
         const items = collectModalPortItems();
-        if (!items.length) return { ok: false, msg: "Mindestens ein Port/Range muss definiert werden." };
+        if (!items.length) return { ok: false, msg: "At least one port/range must be defined." };
         const ports = items.map(x => x.value).filter(Boolean).join(", ");
         const proto = deriveServiceProto(items);
 
@@ -222,7 +222,7 @@
   function renderPortsArea() {
     const items = window.__X4_SVC_PORTS__ || [];
     if (!items.length) {
-      $("#mSvcPortsArea").html(`<div class="hint small">Noch keine Ports definiert.</div>`);
+      $("#mSvcPortsArea").html(`<div class="hint small">No ports defined yet.</div>`);
       return;
     }
 
@@ -230,13 +230,13 @@
       const proto = toProtoUpper(p.proto || "TCP");
       return `
         <div class="miniRow" style="grid-template-columns: 140px 1fr 44px; align-items:center">
-          <select required data-x4-label="Protokoll (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="proto">
+          <select required data-x4-label="Protocol (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="proto">
             <option value="TCP" ${proto === "TCP" ? "selected" : ""}>TCP</option>
             <option value="UDP" ${proto === "UDP" ? "selected" : ""}>UDP</option>
             <option value="TCP/UDP" ${proto === "TCP/UDP" ? "selected" : ""}>TCP/UDP</option>
           </select>
           <input required data-x4-label="Port/Range (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="value" value="${x4EscapeAttr(p.value || "")}" placeholder="22 | 80,443 | 20000-20100" />
-          <button class="iconBtn danger" title="Entfernen" data-svc-port-del="${idx}">🗑</button>
+          <button class="iconBtn danger" title="Remove" data-svc-port-del="${idx}">🗑</button>
         </div>
       `;
     }).join("");

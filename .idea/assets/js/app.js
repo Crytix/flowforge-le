@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Application Bootstrap
+  FlowForge Manager — Application Bootstrap
 */
 
 (() => {
@@ -17,7 +17,7 @@
 
     fns.forEach(fn => {
       if (typeof window[fn] === "function") {
-        try { window[fn](); } catch (e) { console.error("[X4Infra] Render failed:", fn, e); }
+        try { window[fn](); } catch (e) { console.error("[FlowForge] Render failed:", fn, e); }
       }
     });
   }
@@ -35,7 +35,7 @@
 
   $(document).ready(() => {
     startApp().catch(err => {
-      console.error("[X4Infra] Application startup failed.", err);
+      console.error("[FlowForge] Application startup failed.", err);
     });
   });
 })();

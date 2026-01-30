@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Network Provisioning
+  FlowForge LE — Network Provisioning
 
   Scope (v2):
   - Debian: interface naming (udev), network configuration, routes, DNS, NTP
@@ -54,7 +54,7 @@
 
     const blockMsg = servers.length === 0
       ? "Network Provisioning ist erst nutzbar, wenn mindestens ein Server angelegt wurde."
-      : `Network Provisioning benötigt eine Domain in den Umgebungen. Fehlend: ${missingDomains.join(", ")}`;
+      : `Network Provisioning requires a domain on the environments. Missing: ${missingDomains.join(", ")}`;
 
 const html = `
       <div class="blockedWrap">
@@ -62,7 +62,7 @@ const html = `
         <div class="card">
           <div class="hd">
             <h2>Network Provisioning</h2>
-            <div class="hint">Debian (voll) · OpenVMS (experimentell) — Interface-Namen, IP-Konfig, Routen, DNS, NTP</div>
+            <div class="hint">Debian (full) · OpenVMS (experimental) — interface names, IP config, routes, DNS, NTP</div>
           </div>
           <div class="bd">
 
@@ -75,11 +75,11 @@ const html = `
                 </select>
               </div>
               <div>
-                <label for="provEnv">Umgebung (für Single-Server)</label>
-                <select id="provEnv" required data-x4-label="Umgebung">
-                  ${envOpts || `<option value="">(keine Umgebungen)</option>`}
+                <label for="provEnv">Environment (single-server)</label>
+                <select id="provEnv" required data-x4-label="Environment">
+                  ${envOpts || `<option value="">(no environments)</option>`}
                 </select>
-                <div class="hint small">Wird für Gateway/Routes/DNS/NTP genutzt.</div>
+                <div class="hint small">Used for gateway/routes/DNS/NTP.</div>
               </div>
             </div>
 
@@ -104,7 +104,7 @@ const html = `
                 <div>
                   <label for="provConfigVlan">Konfigurationsnetz (VLAN)</label>
                   <select id="provConfigVlan" required data-x4-label="Konfigurationsnetz (VLAN)">${vlanOpts || `<option value="">(keine VLANs)</option>`}</select>
-                  <div class="hint small">${hasMultiEnv ? "Bei mehreren Umgebungen wird das Konfigurationsnetz je Umgebung im Ansible-Modus abgefragt." : "Wird für Default Route & statische Routen genutzt."}</div>
+                  <div class="hint small">${hasMultiEnv ? "If multiple environments exist, the config network is requested per environment in Ansible mode." : "Used for default route and static routes."}</div>
                 </div>
                 <div>
                   <label>Debian: udev Rule Path</label>
@@ -136,7 +136,7 @@ const html = `
               </div>
 
               <div class="hint small" style="margin-top:-4px;margin-bottom:10px">
-                Hinweis: Server-Auswahl basiert auf Rollen (DNS/NTP) in „Server“. IPs werden aus Konfigurationsnetz (VLAN) + Oktett abgeleitet.
+                Note: Server selection is based on roles (DNS/NTP) in “Servers”. IPs are derived from config network (VLAN) + octet.
               </div>
 
 
@@ -158,11 +158,11 @@ const html = `
             <div id="provAnsibleBox" class="hidden">
               <div class="inlineBox">
                 <div class="miniHd">
-                  <div class="ttl">Ansible — Konfig je Umgebung</div>
-                  <div class="hint small">Wird benötigt, wenn mehrere Umgebungen existieren.</div>
+                  <div class="ttl">Ansible — per-environment config</div>
+                  <div class="hint small">Required when multiple environments exist.</div>
                 </div>
 
-                ${hasMultiEnv ? renderEnvConfigTable(envs, vlans) : `<div class="hint small">Nur eine Umgebung vorhanden — Standardwerte reichen.</div>`}
+                ${hasMultiEnv ? renderEnvConfigTable(envs, vlans) : `<div class="hint small">Only one environment — defaults are enough.</div>`}
               </div>
 
               <div class="hint small" style="margin-top:10px">
@@ -171,7 +171,7 @@ const html = `
             </div>
 
             <div class="rowActions" style="justify-content:flex-end;margin-top:10px">
-              <button id="provBuildBtn">Generieren</button>
+              <button id="provBuildBtn">Generate</button>
             </div>
 
           </div>
@@ -217,7 +217,7 @@ const html = `
           <div class="envTag">${esc(envTag)}</div>
           <div>
             <select data-env="${escA(envTag)}" class="provEnvVlan">
-              <option value="">(VLAN wählen)</option>
+              <option value="">(select VLAN)</option>
               ${vlanOpts.replace(`value="${escA(selVlan)}"`, `value="${escA(selVlan)}" selected`)}
             </select>
             <div class="hint small">Konfigurationsnetz</div>
@@ -399,7 +399,7 @@ function bindProvisioningEvents() {
         const out = generateSingle();
         if (!out.ok) {
           // No textbox pollution, no success toast.
-          const msg = String(out.text || "").replace(/^#\s*ERROR:\s*/i, "").trim() || "Fehler im Input.";
+          const msg = String(out.text || "").replace(/^#\s*ERROR:\s*/i, "").trim() || "Input error.";
           window.toast?.critical(msg);
           return;
         }
@@ -411,7 +411,7 @@ function bindProvisioningEvents() {
       } else {
         const out = generateAnsible();
         if (!out.ok) {
-          const msg = String(out.text || "").replace(/^#\s*ERROR:\s*/i, "").trim() || "Bitte Umgebungskonfig ergänzen.";
+          const msg = String(out.text || "").replace(/^#\s*ERROR:\s*/i, "").trim() || "Please complete the environment config.";
           window.toast?.warning(msg);
           return;
         }
@@ -432,13 +432,13 @@ function bindProvisioningEvents() {
         await navigator.clipboard.writeText(txt);
         window.toast?.info("Code kopiert.");
       } catch {
-        window.toast?.critical("Kopieren nicht möglich (Browser Rechte).");
+        window.toast?.critical("Copy not available (browser permissions).");
       }
     });
 
     $("#provZipBtn").on("click", () => {
       const b = window.__X4PROV_BUNDLE__;
-      if (!b) return window.toast?.warning("Bitte zuerst generieren.");
+      if (!b) return window.toast?.warning("Generate output first.");
       const zip = buildZipBundle(b);
       window.downloadFile("x4infra.provisioning.bundle.zip", zip, "application/zip");
       window.toast?.info("Bundle exportiert.");
@@ -468,7 +468,7 @@ function bindProvisioningEvents() {
     return `
       <div class="blockedOverlay" aria-hidden="true">
         <div class="blockedMsg">
-          <div class="ttl">Bereich gesperrt</div>
+          <div class="ttl">Section locked</div>
           <div class="txt">${esc(text)}</div>
         </div>
       </div>
@@ -499,11 +499,11 @@ function bindProvisioningEvents() {
     const envTag = $("#provEnv").val();
     const os = $("#provOsSel").val();
 
-    if (!serverName) return { ok:false, text:"# ERROR: Bitte Server auswählen.\n" };
-    if (!envTag) return { ok:false, text:"# ERROR: Bitte Umgebung auswählen.\n" };
+    if (!serverName) return { ok:false, text:"# ERROR: Select a server.\n" };
+    if (!envTag) return { ok:false, text:"# ERROR: Select an environment.\n" };
 
     const fqdn = fqdnOf(serverName, envTag);
-    if (!fqdn) return { ok:false, text:"# ERROR: Umgebung hat keine Domain (für FQDN erforderlich).\n" };
+    if (!fqdn) return { ok:false, text:"# ERROR: The environment has no domain (required for FQDN).\n" };
 
     // persist DNS/NTP for this env (single mode edits only one env at a time)
     window.CFG.provisioning.dnsChoice[envTag] = window.CFG.provisioning.dnsChoice[envTag] || {primary:"", secondary:""};
@@ -554,13 +554,13 @@ function bindProvisioningEvents() {
     if (hasMultiEnv) {
       const ok = persistEnvConfigFromUi();
       if (!ok) {
-        return { ok:false, text:"# WARN: Bitte Konfigurationsnetz je Umgebung wählen.\n" };
+        return { ok:false, text:"# WARN: Select the configuration network per environment.\n" };
       }
     }
 
     // ensure at least one env exists
     if (!envs.length) {
-      return { ok:false, text:"# ERROR: Keine Umgebungen definiert.\n" };
+      return { ok:false, text:"# ERROR: No environments defined.\n" };
     }
 
     // Build per-server scripts (Debian/OpenVMS) and a playbook that chooses based on hostvar
@@ -624,7 +624,7 @@ function bindProvisioningEvents() {
 
   function buildDebianProvisionScript(srv, envTag, scriptName, dnsServers, ntpServers, configVlanName, opts) {
     const fqdn = fqdnOf(srv.name, envTag);
-    if (!fqdn) return `# ERROR: Umgebung "${envTag}" hat keine Domain (FQDN erforderlich).\n`;
+    if (!fqdn) return `# ERROR: Environment "${envTag}" has no domain (FQDN required).\n`;
     const forAnsible = !!(opts && opts.forAnsible);
 
     const udevPath = (window.CFG.debian && window.CFG.debian.udevPath) ? window.CFG.debian.udevPath : "/etc/udev/rules.d/10-x4infra-ifnames.rules";
@@ -666,7 +666,7 @@ function bindProvisioningEvents() {
       : "# NTP: (not set)";
 
     const netCfg = [];
-    netCfg.push(`# Generated by X4Infra Manager — Debian ifupdown snippet`);
+    netCfg.push(`# Generated by FlowForge LE — Debian ifupdown snippet`);
     netCfg.push(`# Host: ${srv.name}  Env: ${envTag}`);
     netCfg.push("");
 
@@ -701,7 +701,7 @@ function bindProvisioningEvents() {
     const netCfgText = netCfg.join("\n");
 
     const lines = [];
-    lines.push(`# X4Infra Manager — Network Provisioning (Debian)`);
+    lines.push(`# FlowForge LE — Network Provisioning (Debian)`);
     lines.push(`# Server: ${srv.name}`);
     lines.push(`# FQDN: ${fqdn}`);
     lines.push(`# Env: ${envTag}`);
@@ -749,12 +749,12 @@ NETCFG="/etc/network/interfaces.d/x4infra-${srv.name}.cfg"
 
 trap 'rm -f "$RULES_TMP"' EXIT
 
-echo "[X4Infra] Detecting IPv4 addresses (scope global)..."
+echo "[FlowForge] Detecting IPv4 addresses (scope global)..."
 mapfile -t IFROWS < <(ip -o -4 addr show scope global | awk '{print $2" "$4}' || true)
 
 # Base rules header
 cat > "$RULES_TMP" <<'HDR'
-# Generated by X4Infra Manager — udev interface names
+# Generated by FlowForge LE — udev interface names
 # SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="<mac>", NAME="<name>"
 HDR
 
@@ -823,20 +823,20 @@ with open(out_path, "a", encoding="utf-8") as f:
     f.write(ln + "\n")
 PY
 
-echo "[X4Infra] Installing udev rules to: $UDEV_PATH"
+echo "[FlowForge] Installing udev rules to: $UDEV_PATH"
 sudo install -m 0644 "$RULES_TMP" "$UDEV_PATH"
 sudo udevadm control --reload-rules
 sudo udevadm trigger --subsystem-match=net
 
-echo "[X4Infra] Writing network config to: $NETCFG"
+echo "[FlowForge] Writing network config to: $NETCFG"
 sudo mkdir -p /etc/network/interfaces.d
 sudo tee "$NETCFG" >/dev/null <<'NET'
 ${netCfgText}
 NET
 
 echo "${ntpLine}"
-echo "[X4Infra] Apply: sudo ifdown --exclude=lo -a && sudo ifup --exclude=lo -a"
-echo "[X4Infra] Reboot recommended after rename: sudo reboot"
+echo "[FlowForge] Apply: sudo ifdown --exclude=lo -a && sudo ifup --exclude=lo -a"
+echo "[FlowForge] Reboot recommended after rename: sudo reboot"
 `);
 
     if (!forAnsible) {
@@ -861,7 +861,7 @@ echo "[X4Infra] Reboot recommended after rename: sudo reboot"
     const cfgGw = cfgVlan ? selectGatewayForEnv(cfgVlan, envTag) : "";
 
     const lines = [];
-    lines.push("! X4Infra Manager — Network Provisioning (OpenVMS) — EXPERIMENTAL");
+    lines.push("! FlowForge LE — Network Provisioning (OpenVMS) — EXPERIMENTAL");
     lines.push("! This is a best-effort skeleton. Review commands for your TCP/IP stack (TCPIP Services / UCX).");
     const fqdn = fqdnOf(srv.name, envTag) || "";
     lines.push(`! Host: ${srv.name}   Env: ${envTag}`);
@@ -924,7 +924,7 @@ echo "[X4Infra] Reboot recommended after rename: sudo reboot"
   
   function buildAnsibleInventory(envs, servers) {
     const lines = [];
-    lines.push("# X4Infra Manager — Ansible Inventory (demo)");
+    lines.push("# FlowForge LE — Ansible Inventory (demo)");
     lines.push("# Hosts are listed as FQDN when possible; x4infra_name maps to CFG server name.");
     lines.push("");
     const deb = [];
@@ -972,7 +972,7 @@ echo "[X4Infra] Reboot recommended after rename: sudo reboot"
 
 function buildAnsiblePlaybook(envs, servers, scriptsDeb, scriptsVms) {
     const lines = [];
-    lines.push("# X4Infra Manager — Network Provisioning Playbook");
+    lines.push("# FlowForge LE — Network Provisioning Playbook");
     lines.push("# Inventory: host can be FQDN; set x4infra_name=<CFG server name> (see inventory.ini)");
     lines.push("");
     lines.push("- name: Apply network provisioning scripts");
@@ -1023,7 +1023,7 @@ function buildAnsiblePlaybook(envs, servers, scriptsDeb, scriptsVms) {
 
   function buildBundleReadme() {
     return [
-      "X4Infra Manager — Network Provisioning Bundle",
+      "FlowForge LE — Network Provisioning Bundle",
       "",
       "Contents:",
       "- playbook.yml",

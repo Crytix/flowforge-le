@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Global Stylesheet
+  FlowForge LE — Global Stylesheet
 
   Purpose:
   - Shared design system for all views (tabs, actions, cards, tables, tags, forms).
@@ -47,6 +47,7 @@ a:hover{text-decoration:underline}
 .appHeader{padding:22px 18px 10px;max-width:1200px;margin:0 auto}
 .appHeader__inner{display:flex;flex-direction:column;gap:6px}
 .appTitle{margin:0;font-size:28px;letter-spacing:.2px}
+.appTitle .le{font-size:14px;vertical-align:super;letter-spacing:.6px;opacity:.75;margin-left:6px}
 .appSubtitle{color:var(--muted);font-size:14px}
 
 .wrap{max-width:1200px;margin:0 auto;padding:12px 18px 40px}
@@ -194,7 +195,7 @@ td.actionsCol .rowActions{justify-content:flex-end}
 /* Toasts (top-right notifications) */
 #x4ToastHost{
   position:fixed;
-  /* Keep toasts high so they don't cover header actions (e.g. Einstellungen) */
+  /* Keep toasts high so they don't cover header actions (e.g. Settings) */
   top:8px;
   right:12px;
   z-index:10050;
@@ -452,3 +453,13 @@ label.req::after{
 .x4BoolSlider button.on{color:var(--text)}
 .x4BoolSlider button:focus{outline:none}
 .x4BoolSlider button:hover{color:var(--text)}
+
+
+/* FlowForge LE footer */
+.ff-footer{margin-top:40px;padding:12px 16px;border-top:1px solid var(--line);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;color:var(--muted);font-size:12px}
+.ff-footer-left,.ff-footer-right{display:flex;align-items:center;gap:10px}
+.ff-footer-center{text-align:center;line-height:1.3}
+.ff-footer img{opacity:.85;transition:opacity .15s ease}
+.ff-footer a:hover img{opacity:1}
+.ff-footer a{color:inherit;text-decoration:none}
+.ff-footer-right a{display:inline-flex;align-items:center;gap:6px}

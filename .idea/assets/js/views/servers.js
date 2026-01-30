@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Servers View (modal-based)
+  FlowForge LE — Servers View (modal-based)
 
   Purpose:
   - Manage logical hosts
@@ -46,7 +46,7 @@
       <div class="blockedWrap">
         <div class="card">
           <div class="hd">
-            <h2>Server</h2>
+            <h2>Servers</h2>
             <div class="rowActions">
               <button class="secondary btnIcon" id="btnAddServer" ${netBlocked ? "disabled" : ""}>+ Server</button>
             </div>
@@ -54,12 +54,12 @@
           <div class="bd" style="overflow:auto">
             ${renderTable()}
             <div class="hint small" style="margin-top:10px">
-              Hinweis: IP-Adressen werden aus Netz (CIDR) + letztem Oktett gebildet.
+              Note: IP addresses are derived from network (CIDR) + last octet.
             </div>
           </div>
         </div>
 
-        ${netBlocked ? renderBlockedOverlay("Server sind erst nutzbar, wenn mindestens ein Netzwerk/VLAN angelegt wurde.") : ""}
+        ${netBlocked ? renderBlockedOverlay("Servers are available after you create at least one network/VLAN.") : ""}
       </div>
     `;
 
@@ -71,7 +71,7 @@
     return `
       <div class="blockedOverlay" aria-hidden="true">
         <div class="blockedMsg">
-          <div class="ttl">Bereich gesperrt</div>
+          <div class="ttl">Section locked</div>
           <div class="txt">${esc(text)}</div>
         </div>
       </div>
@@ -104,14 +104,14 @@
             <th>Servername</th>
             <th>OS</th>
             <th>IP Oktett</th>
-            <th>Umgebungen</th>
-            <th>Netzwerke</th>
+            <th>Environments</th>
+            <th>Networks</th>
             <th>Services</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          ${rows || `<tr><td colspan="7" class="hint">Keine Server.</td></tr>`}
+          ${rows || `<tr><td colspan="7" class="hint">No servers.</td></tr>`}
         </tbody>
       </table>
     `;
@@ -134,7 +134,7 @@
     const isDelete = (kind === "delete");
     const cls = `iconBtn ${isDelete ? "danger" : ""}`;
     const symbol = (kind === "view") ? "🔎" : (isDelete ? "🗑" : "✎");
-    const title = (kind === "view") ? "Details" : (isDelete ? "Löschen" : "Bearbeiten");
+    const title = (kind === "view") ? "Details" : (isDelete ? "Delete" : "Edit");
     return `<button class="${cls}" title="${title}" data-srv-action="${kind}" data-srv-idx="${idx}">${symbol}</button>`;
   }
 
@@ -153,7 +153,7 @@
         if (action === "delete") {
           const s = window.CFG.servers[idx];
           const name = s?.name || "";
-          if (!confirm(`"${name}" wirklich löschen?`)) return;
+          if (!confirm(`"${name}" delete this item?`)) return;
           window.CFG.servers.splice(idx, 1);
           saveAndRefresh("Server entfernt.");
           return;
@@ -188,7 +188,7 @@
 
     const routesTable = routes.length ? `
       <table>
-        <thead><tr><th>Ziel</th><th>Via</th><th>Gateway</th><th>Metric</th><th>Umgebung</th><th>Kommentar</th></tr></thead>
+        <thead><tr><th>Destination</th><th>Via</th><th>Gateway</th><th>Metric</th><th>Environment</th><th>Comment</th></tr></thead>
         <tbody>
           ${routes.map(r => `
             <tr>
@@ -201,11 +201,11 @@
             </tr>
           `).join("")}
         </tbody>
-      </table>` : `<div class="hint">Keine Routen gespeichert.</div>`;
+      </table>` : `<div class="hint">No routes saved.</div>`;
 
     const fwTable = fw.length ? `
       <table>
-        <thead><tr><th>Richtung</th><th>Quelle</th><th>Ziel</th><th>Proto</th><th>Ports</th><th>Umgebung</th><th>Kommentar</th></tr></thead>
+        <thead><tr><th>Direction</th><th>Source</th><th>Destination</th><th>Protocol</th><th>Ports</th><th>Environment</th><th>Comment</th></tr></thead>
         <tbody>
           ${fw.map(x => `
             <tr>
@@ -219,16 +219,16 @@
             </tr>
           `).join("")}
         </tbody>
-      </table>` : `<div class="hint">Keine Firewallregeln gespeichert.</div>`;
+      </table>` : `<div class="hint">No firewall rules saved.</div>`;
 
     const body = `
       <div>
-        <label>FQDNs (Servername + Domain je Umgebung)</label>
+        <label>FQDNs (Servername + Domain je Environment)</label>
         <div style="margin-top:6px">${fqdnLines}</div>
       </div>
 
       <div style="margin-top:14px">
-        <label>Routen</label>
+        <label>Routes</label>
         <div style="overflow:auto; margin-top:6px">${routesTable}</div>
       </div>
 
@@ -238,12 +238,12 @@
       </div>
 
       <div class="hint small" style="margin-top:12px">
-        Hinweis: Regeln/Routen werden vom Generator als Konfigurations-Items in diesem Server gespeichert.
+        Note: Rules/routes werden vom Generator als Konfigurations-Items in diesem Server gespeichert.
       </div>
     `;
 
     window.X4Modal.open({
-      title: `Server Details — ${s.name}`,
+      title: `Server details — ${s.name}`,
       bodyHtml: body,
       onSave: null
     });
@@ -285,7 +285,7 @@
         </div>
         <div>
           <label>Zentrale Rollen</label>
-          <div class="hint small" style="margin-bottom:6px">Kann später in Generator/Provisioning als Referenz genutzt werden.</div>
+          <div class="hint small" style="margin-bottom:6px">Can be referenced later in Generator/Provisioning.</div>
           <label style="display:flex;align-items:center;gap:8px;margin:6px 0">
             <input id="mSrvRoleDns" type="checkbox" ${item.roles?.dns ? "checked" : ""} style="width:auto" />
             <span>Zentraler DNS Server</span>
@@ -298,16 +298,16 @@
       </div>
 
       <div style="margin-top:10px">
-        <label>Umgebungen (Tags)</label>
-        <input type="hidden" id="mSrvEnvReq" required data-x4-label="Umgebungen" value="${escA((item.envs||[]).join(","))}">
+        <label>Environments (Tags)</label>
+        <input type="hidden" id="mSrvEnvReq" required data-x4-label="Environments" value="${escA((item.envs||[]).join(","))}">
         <div class="tagGrid" id="mSrvEnvs">
           ${renderToggleTags(allEnvTags, item.envs)}
         </div>
       </div>
 
       <div style="margin-top:10px">
-        <label>Netzwerke/VLANs</label>
-        <input type="hidden" id="mSrvVlanReq" required data-x4-label="Netzwerke/VLANs" value="${escA((item.vlans||[]).join(","))}">
+        <label>Networks/VLANs</label>
+        <input type="hidden" id="mSrvVlanReq" required data-x4-label="Networks/VLANs" value="${escA((item.vlans||[]).join(","))}">
         <div class="hint small" id="mSrvVlanHint" style="margin-bottom:6px"></div>
         <div class="tagGrid" id="mSrvVlans"></div>
       </div>
@@ -320,12 +320,12 @@
       </div>
 
       <div class="hint small" style="margin-top:10px">
-        Hinweis: Generator & Provisioning nutzen VLAN-CIDR + Oktett, um Host-IPs abzuleiten.
+        Note: Generator & Provisioning use VLAN CIDR + octet to derive host IPs.
       </div>
     `;
 
     window.X4Modal.open({
-      title: isEdit ? "Server bearbeiten" : "Server anlegen",
+      title: isEdit ? "Edit server" : "Create server",
       bodyHtml: body,
       onOpen: () => {
         const renderVlans = () => {
@@ -341,9 +341,9 @@
           $("#mSrvVlanReq").val(act.join(","));
 
           if (!selEnvs.length) {
-            $("#mSrvVlanHint").text("Bitte mindestens eine Umgebung auswählen, um VLANs anzeigen zu können.");
+            $("#mSrvVlanHint").text("Select at least one environment to list VLANs.");
           } else if (!available.length) {
-            $("#mSrvVlanHint").text("Für die ausgewählten Umgebungen sind keine VLANs definiert.");
+            $("#mSrvVlanHint").text("No VLANs are defined for the selected environments.");
           } else {
             $("#mSrvVlanHint").text("");
           }
@@ -406,7 +406,7 @@
         if (isEdit) window.CFG.servers[editIdx] = payload;
         else window.CFG.servers.push(payload);
 
-        saveAndRefresh(isEdit ? "Server aktualisiert." : "Server hinzugefügt.");
+        saveAndRefresh(isEdit ? "Server updated." : "Server added.");
         // clean up modal-specific handler
         $(document).off("click.srvEnvFilter");
         return { ok: true };

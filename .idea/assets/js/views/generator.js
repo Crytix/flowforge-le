@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Firewall & Routen
+  FlowForge LE — Firewall & Routing
 
   Generates:
   - Bidirectional host-based firewall rules (nftables oriented)
@@ -37,8 +37,8 @@
       <div class="grid">
         <div class="card">
           <div class="hd">
-            <h2>Firewall & Routen</h2>
-            <div class="hint">Erzeugt Firewall-Regeln + Hin- und Rück-Routen und speichert sie in den Server-Items.</div>
+            <h2>Firewall & Routing</h2>
+            <div class="hint">Forges firewall rules and bidirectional routes and stores them on server configuration items.</div>
           </div>
 
           <div class="bd">
@@ -51,15 +51,15 @@
                   <button type="button" class="on" data-val="off">OFF</button>
                   <button type="button" class="off" data-val="on">ON</button>
                 </div>
-                <div class="hint small">Standard: OFF (nur Quelle → Ziel).</div>
+                <div class="hint small">Default: OFF (source → destination only).</div>
               </div>
               <div>
-                <label class="req" for="genEnv">Umgebung</label>
-                <select id="genEnv" required data-x4-label="Umgebung">${envOptions}</select>
+                <label class="req" for="genEnv">Environment</label>
+                <select id="genEnv" required data-x4-label="Environment">${envOptions}</select>
               </div>
             </div>
 
-            <div class="sectionTtl">Quelle</div>
+            <div class="sectionTtl">Source</div>
             <div class="two" style="margin-bottom:10px">
               <div>
                 <label class="req">Typ</label>
@@ -70,12 +70,12 @@
                 </div>
               </div>
               <div>
-                <label class="req" for="genSrc">Quelle</label>
-                <select id="genSrc" required data-x4-label="Quelle"></select>
+                <label class="req" for="genSrc">Source</label>
+                <select id="genSrc" required data-x4-label="Source"></select>
               </div>
             </div>
 
-            <div class="sectionTtl">Ziel</div>
+            <div class="sectionTtl">Destination</div>
             <div class="two" style="margin-bottom:10px">
               <div>
                 <label class="req">Typ</label>
@@ -86,8 +86,8 @@
                 </div>
               </div>
               <div>
-                <label class="req" for="genDst">Ziel</label>
-                <select id="genDst" required data-x4-label="Ziel"></select>
+                <label class="req" for="genDst">Destination</label>
+                <select id="genDst" required data-x4-label="Destination"></select>
               </div>
             </div>
 
@@ -95,7 +95,7 @@
               <div>
                 <label class="req" for="genViaVlan">Route via (VLAN)</label>
                 <select id="genViaVlan" required data-x4-label="Route via"></select>
-                <div class="hint small">Nur VLANs der Umgebung, die in den Firewall-Zonen verfügbar sind.</div>
+                <div class="hint small">Only VLANs in this environment that are available via firewall zones.</div>
               </div>
               <div>
                 <label class="req" for="genMetric">Route metric</label>
@@ -103,10 +103,7 @@
               </div>
             </div>
 
-            <div class="sectionTtl" style="display:flex;align-items:center;justify-content:space-between">
-              <span>Service</span>
-              <button type="button" class="secondary" id="genAddServiceBtn">+Service</button>
-            </div>
+            <div class="miniHd" style="margin-top:6px"><div class="ttl">Services</div><button type="button" class="secondary btnIcon" id="genAddServiceBtn" title="Add service"><i class="fa-solid fa-plus"></i> Service</button></div>
 
             <div class="tableWrap" style="margin-bottom:10px">
               <table class="tbl" id="genSvcTable">
@@ -115,17 +112,17 @@
                     <th>Service</th>
                     <th style="width:140px">Proto</th>
                     <th style="width:200px">Ports</th>
-                    <th style="width:90px" class="right">Aktion</th>
+                    <th style="width:60px" class="right"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="4" class="muted">Noch keine Services gewählt.</td></tr>
+                  <tr><td colspan="4" class="muted">No services selected yet.</td></tr>
                 </tbody>
               </table>
             </div>
 
             <div class="rowActions" style="justify-content:flex-end">
-              <button id="genRunBtn" ${isBlocked ? "disabled" : ""}>Generieren</button>
+              <button id="genRunBtn" ${isBlocked ? "disabled" : ""}>Generate</button>
             </div>
 
           </div>
@@ -134,17 +131,17 @@
         <div class="card">
           <div class="hd">
             <h2>Output</h2>
-            <div class="hint">Routen + Firewall Regeln</div>
+            <div class="hint">Routes + Firewall rules</div>
           </div>
           <div class="bd">
-            <div class="hint">Routing (inkl. Rückroute)</div>
+            <div class="hint">Routing (incl. return route)</div>
             <div class="x4CodeBox">
-              <a class="x4CodeCopy" href="#" data-copy-for="genOutRoutes" style="display:none">Code kopieren</a>
+              <a class="x4CodeCopy" href="#" data-copy-for="genOutRoutes" style="display:none">Copy code</a>
               <textarea id="genOutRoutes" readonly style="min-height:180px"></textarea>
             </div>
             <div class="hint" style="margin-top:10px">Firewall</div>
             <div class="x4CodeBox">
-              <a class="x4CodeCopy" href="#" data-copy-for="genOutFw" style="display:none">Code kopieren</a>
+              <a class="x4CodeCopy" href="#" data-copy-for="genOutFw" style="display:none">Copy code</a>
               <textarea id="genOutFw" readonly style="min-height:180px"></textarea>
             </div>
 
@@ -175,19 +172,19 @@
     const cfg = window.CFG || {};
     const missing = [];
 
-    if (!Array.isArray(cfg.envs) || !cfg.envs.length) missing.push("Umgebungen");
-    if (!Array.isArray(cfg.zones) || !cfg.zones.length) missing.push("Zonen");
-    if (!Array.isArray(cfg.vlans) || !cfg.vlans.length) missing.push("Netzwerke/VLANs");
+    if (!Array.isArray(cfg.envs) || !cfg.envs.length) missing.push("Environmenten");
+    if (!Array.isArray(cfg.zones) || !cfg.zones.length) missing.push("Zones");
+    if (!Array.isArray(cfg.vlans) || !cfg.vlans.length) missing.push("Networks/VLANs");
     if (!Array.isArray(cfg.services) || !cfg.services.length) missing.push("Services");
     if (!Array.isArray(cfg.servers) || !cfg.servers.length) missing.push("Server");
 
     const badServers = (cfg.servers || []).filter(s => !(s && s.name && s.octet && Array.isArray(s.envs) && s.envs.length && Array.isArray(s.vlans) && s.vlans.length));
-    if (badServers.length) missing.push("Server-Konfiguration (Name/Oktett/Umgebung/VLAN)");
+    if (badServers.length) missing.push("Server-Konfiguration (Name/Oktett/Environment/VLAN)");
 
     const ok = missing.length === 0;
     return {
       ok,
-      msg: ok ? "" : `Generator ist erst nutzbar, wenn die Vorbedingungen erfüllt sind: ${missing.join(", ")}.`
+      msg: ok ? "" : `The generator is available after prerequisites are met: ${missing.join(", ")}.`
     };
   }
 
@@ -195,7 +192,7 @@
     return window.renderBlockedOverlay ? window.renderBlockedOverlay(text) : `
       <div class="blockedOverlay" aria-hidden="true">
         <div class="blockedMsg">
-          <div class="ttl">Bereich gesperrt</div>
+          <div class="ttl">Section locked</div>
           <div class="txt">${window.x4EscapeHtml(text || "")}</div>
         </div>
       </div>
@@ -260,14 +257,33 @@ function getEndpointType(which) {
     // +Service
     $("#genAddServiceBtn").on("click", () => openAddServiceModal());
 
-    // Remove service row
-    $("#genSvcTable").on("click", "[data-del='1']", function () {
-      const idx = parseInt($(this).attr("data-idx"), 10);
+    // Remove service row (grouped): removes all entries of that service.
+    // Backwards compatible with older single-row buttons.
+    $("#genSvcTable").on("click", "[data-del-svc='1'], [data-del='1']", function () {
+      const $btn = $(this);
+      const idxListRaw = String($btn.attr("data-idxlist") || "").trim();
+
+      if (idxListRaw) {
+        const idxs = idxListRaw
+          .split(",")
+          .map(x => parseInt(x, 10))
+          .filter(n => Number.isFinite(n))
+          .sort((a, b) => b - a); // delete from end
+
+        if (!idxs.length) return;
+        idxs.forEach(i => GEN_STATE.services.splice(i, 1));
+        renderServiceTable();
+        updateGeneratedState();
+        window.toast?.info("Service removed.");
+        return;
+      }
+
+      const idx = parseInt($btn.attr("data-idx"), 10);
       if (!Number.isFinite(idx)) return;
       GEN_STATE.services.splice(idx, 1);
       renderServiceTable();
       updateGeneratedState();
-      window.toast?.info("Service entfernt.");
+      window.toast?.info("Service removed.");
     });
 
     // Output copy links
@@ -280,7 +296,7 @@ function getEndpointType(which) {
         await navigator.clipboard.writeText(txt);
         window.toast?.info("Code kopiert.");
       } catch {
-        window.toast?.critical("Kopieren nicht möglich (Browser Rechte).");
+        window.toast?.critical("Copy not available (browser permissions).");
       }
     });
 
@@ -309,11 +325,11 @@ function getEndpointType(which) {
     // Apply
     $("#genApplyBtn").on("click", () => {
       const env = getSelectedEnvTag();
-      if (!env) return window.toast?.critical("Umgebung muss gewählt werden.");
+      if (!env) return window.toast?.critical("Environment must be selected.");
 
       const result = window.__X4INFRA_GEN_LAST__;
       if (!result || (!result.routesByServer && !result.fwByServer)) {
-        return window.toast?.warning("Bitte zuerst generieren.");
+        return window.toast?.warning("Generate output first.");
       }
 
       const applied = applyArtifactsToServers(result.routesByServer, result.fwByServer);
@@ -329,7 +345,7 @@ function getEndpointType(which) {
     // CSV
     $("#genCsvBtn").on("click", () => {
       const csv = window.__X4INFRA_CSV__;
-      if (!csv) return window.toast?.warning("Bitte zuerst generieren.");
+      if (!csv) return window.toast?.warning("Generate output first.");
       window.downloadFile("x4infra.generator.csv", csv, "text/csv;charset=utf-8");
       window.toast?.info("CSV exportiert.");
     });
@@ -435,20 +451,72 @@ function getEndpointType(which) {
     if (!$tb.length) return;
 
     if (!GEN_STATE.services.length) {
-      $tb.html(`<tr><td colspan="4" class="muted">Noch keine Services gewählt.</td></tr>`);
+      $tb.html(`<tr><td colspan="4" class="muted">No services selected yet.</td></tr>`);
       return;
     }
 
-    const rows = GEN_STATE.services.map((x, idx) => {
-      const protoUp = String(x.proto || "").toUpperCase();
-      const ports = String(x.ports || "");
+    // Robust port tokenization:
+    // - supports commas, semicolons, newlines
+    // - keeps ranges intact (e.g. 20000-20100)
+    // - supports arrays (joined)
+    const splitPorts = (val) => {
+      if (Array.isArray(val)) val = val.join(",");
+      const raw = String(val ?? "").trim();
+      if (!raw) return [];
+      return raw
+        .replace(/\r\n/g, "\n")
+        .replace(/;/g, ",")
+        .replace(/\n+/g, ",")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean);
+    };
+
+    const mkTag = (label) => `<span class="tag static"><span class="name">${window.escapeHtml(label)}</span></span>`;
+
+    // Group by serviceName so multi-proto/multi-port services are readable in one row.
+    const groups = new Map();
+    GEN_STATE.services.forEach((e, idx) => {
+      const name = String(e.serviceName || "").trim();
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push({ ...e, __idx: idx });
+    });
+
+    const rows = Array.from(groups.entries()).map(([name, entries]) => {
+      const protos = Array.from(new Set(entries.map(e => String(e.proto || "").toUpperCase()).filter(Boolean)));
+      const multiProto = protos.length > 1;
+
+      // Build port chips. If multiple protos are involved, prefix each port with PROTO for clarity.
+      const portChips = [];
+      entries.forEach(e => {
+        const pUp = String(e.proto || "").toUpperCase() || "-";
+        const ports = splitPorts(e.ports);
+        if (!ports.length) {
+          // still show something for empty ports to make the entry visible
+          portChips.push(mkTag(multiProto ? `${pUp}: -` : "-"));
+          return;
+        }
+        ports.forEach(pt => portChips.push(mkTag(multiProto ? `${pUp}: ${pt}` : pt)));
+      });
+
+      const protoHtml = protos.length
+        ? `<div class="tagGrid">${protos.map(p => mkTag(p)).join("")}</div>`
+        : `<span class="muted">-</span>`;
+
+      const portsHtml = portChips.length
+        ? `<div class="tagGrid">${portChips.join("")}</div>`
+        : `<span class="muted">-</span>`;
+
+      // Remove button removes ALL entries of that service (because they logically belong together).
+      const idxList = entries.map(e => e.__idx).join(",");
+
       return `
         <tr>
-          <td>${window.escapeHtml(x.serviceName || "")}</td>
-          <td>${window.escapeHtml(protoUp)}</td>
-          <td>${window.escapeHtml(ports)}</td>
+          <td>${window.escapeHtml(name || "")}</td>
+          <td>${protoHtml}</td>
+          <td>${portsHtml}</td>
           <td class="right">
-            <button class="iconBtn" title="Löschen" data-del="1" data-idx="${idx}">
+            <button class="iconBtn danger" title="Entfernen" data-del-svc="1" data-idxlist="${window.escapeAttr(idxList)}">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -459,9 +527,10 @@ function getEndpointType(which) {
     $tb.html(rows);
   }
 
+
   function openAddServiceModal() {
     const svcs = window.CFG.services || [];
-    if (!svcs.length) return window.toast?.critical("Keine Services vorhanden.");
+    if (!svcs.length) return window.toast?.critical("No services available.");
 
     const svcOptions = svcs.map(s => `<option value="${window.escapeAttr(s.name)}">${window.escapeHtml(s.name)}</option>`).join("");
 
@@ -472,21 +541,36 @@ function getEndpointType(which) {
           <select id="mGenSvc" required data-x4-label="Service">${svcOptions}</select>
         </div>
         <div>
-          <label class="req" for="mGenPort">Port/Proto</label>
-          <select id="mGenPort" required data-x4-label="Port/Proto"></select>
+          <label class="req" for="mGenPort">Port / Protocol</label>
+          <select id="mGenPort" required data-x4-label="Port / Protocol"></select>
         </div>
       </div>
-      <div class="hint small">Kommentare werden nicht angezeigt, aber im Output genutzt.</div>
+      <div class="hint small">Comments are hidden here but included in the generated output.</div>
     `;
 
+    // Normalize different port value encodings into the string format used across the app.
+    // Supported:
+    // - "22" / "80,443" / "20000-20100"
+    // - arrays: ["80","443"]
+    // - objects: {from:20000,to:20100} or {start:...,end:...}
+    const portValueToString = (val) => {
+      if (Array.isArray(val)) return val.map(v => String(v).trim()).filter(Boolean).join(",");
+      if (val && typeof val === "object") {
+        const a = val.from ?? val.start ?? val.min;
+        const b = val.to ?? val.end ?? val.max;
+        if (a != null && b != null) return `${String(a).trim()}-${String(b).trim()}`;
+      }
+      return String(val ?? "").trim();
+    };
+
     window.X4Modal.open({
-      title: "Service hinzufügen",
+      title: "Add service",
       bodyHtml: body,
       onOpen: () => {
         const fillPorts = () => {
           const name = $("#mGenSvc").val();
           const svc = (window.CFG.services || []).find(s => s.name === name);
-          if (!svc) return $("#mGenPort").html("<option value=''> (leer)</option>");
+          if (!svc) return $("#mGenPort").html("<option value=''> (empty)</option>");
 
           const items = (svc.portItems && Array.isArray(svc.portItems) && svc.portItems.length)
             ? svc.portItems
@@ -494,7 +578,7 @@ function getEndpointType(which) {
 
           const opts = items.map((it, idx) => {
             const p = String(it.proto || "TCP").toUpperCase();
-            const v = String(it.value || "").trim();
+            const v = portValueToString(it.value);
             const label = `${p}: ${v || "(leer)"}`;
             return `<option value="${idx}">${window.escapeHtml(label)}</option>`;
           }).join("");
@@ -507,7 +591,7 @@ function getEndpointType(which) {
       },
       onSave: () => {
         if (!window.x4ValidateRequired?.("#x4ModalBack")) {
-          return { ok: false, msg: "Bitte Pflichtfelder ausfüllen." };
+          return { ok: false, msg: "Please fill all required fields." };
         }
 
         const name = $("#mGenSvc").val();
@@ -521,13 +605,13 @@ function getEndpointType(which) {
 
         const it = items[Math.max(0, Math.min(idx, items.length - 1))] || {};
         const proto = normalizeProtoLower(it.proto || "tcp");
-        const ports = String(it.value || "").trim();
+        const ports = portValueToString(it.value);
         const comment = svc.comment ? `${svc.name} — ${svc.comment}` : svc.name;
 
         GEN_STATE.services.push({ serviceName: svc.name, proto: proto || "tcp", ports, comment });
         renderServiceTable();
         updateGeneratedState();
-        window.toast?.info("Service hinzugefügt.");
+        window.toast?.info("Service added.");
         return { ok: true };
       }
     });
@@ -548,20 +632,20 @@ function getEndpointType(which) {
   function validateGeneratorInput() {
     // validate required UI
     if (!window.x4ValidateRequired?.("#generatorView")) {
-      return "Bitte Pflichtfelder ausfüllen.";
+      return "Please fill all required fields.";
     }
 
     const env = getSelectedEnvTag();
-    if (!env) return "Umgebung muss gewählt werden.";
+    if (!env) return "Environment must be selected.";
 
     const srcVal = $("#genSrc").val();
     const dstVal = $("#genDst").val();
-    if (!srcVal || !dstVal) return "Quelle und Ziel müssen gewählt werden.";
+    if (!srcVal || !dstVal) return "Source and destination must be selected.";
 
     const via = $("#genViaVlan").val();
-    if (!via) return "Route via muss gewählt werden.";
+    if (!via) return "Route via must be selected.";
 
-    if (!GEN_STATE.services.length) return "Mindestens ein Service muss hinzugefügt werden.";
+    if (!GEN_STATE.services.length) return "Add at least one service.";
 
     return "";
   }
@@ -581,7 +665,7 @@ function getEndpointType(which) {
     const src = resolveEndpoint(srcType, srcVal, env);
     const dst = resolveEndpoint(dstType, dstVal, env);
 
-    if (!src || !dst) return { error: "Quelle/Ziel konnte nicht aufgelöst werden." };
+    if (!src || !dst) return { error: "Source/destination could not be resolved." };
 
     // Routes are independent from service list
     const routesByServer = buildRoutesWithReverse(src, dst, env, metric, viaVlan, "");
@@ -647,7 +731,7 @@ function getEndpointType(which) {
       }
     }
 
-    if (!routeCount && !fwCount) return { ok: true, msg: "Keine neuen Einträge — alles bereits vorhanden." };
+    if (!routeCount && !fwCount) return { ok: true, msg: "No new entries — everything already exists." };
     return { ok: true, msg: `Gespeichert: ${routeCount} Route(n), ${fwCount} Firewallregel(n).` };
   }
 
@@ -784,7 +868,7 @@ function getEndpointType(which) {
 
   function formatRoutes(perServerRoutes, envTag) {
     const lines = [];
-    lines.push(`# Routing — inklusive Rückroute (Env: ${envTag})`);
+    lines.push(`# Routing — including return route (Env: ${envTag})`);
     lines.push("");
 
     const servers = Array.from(perServerRoutes.keys()).sort();

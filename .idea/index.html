@@ -1,31 +1,31 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>X4Infra Manager</title>
+  <title>FlowForge LE</title>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <link rel="stylesheet" href="assets/css/app.css" />
 </head>
 <body>
   <header class="appHeader">
     <div class="appHeader__inner">
-      <h1 class="appTitle">X4Infra Manager</h1>
-      <div class="appSubtitle">X.400 Plattform – Infrastruktur, Routing, Firewall- und Debian-Interface-Konfiguration</div>
+      <h1 class="appTitle">FlowForge <span class="le">LE</span></h1>
+      <div class="appSubtitle">Where network flows are forged.</div>
     </div>
   </header>
 
   <main class="wrap">
     <div class="topbar">
-      <div class="tabs" role="tablist" aria-label="X4Infra Manager Navigation">
-        <button class="tabbtn active" data-view="generatorView" role="tab" aria-selected="true">Firewall & Routen</button>
+      <div class="tabs" role="tablist" aria-label="FlowForge LE Navigation">
+        <button class="tabbtn active" data-view="generatorView" role="tab" aria-selected="true">Firewall & Routing</button>
         <button class="tabbtn" data-view="provisioningView" role="tab" aria-selected="false">Network Provisioning</button>
-        <button class="tabbtn" data-view="serversView" role="tab" aria-selected="false">Server</button>
+        <button class="tabbtn" data-view="serversView" role="tab" aria-selected="false">Servers</button>
         <button class="tabbtn" data-view="servicesView" role="tab" aria-selected="false">Services</button>
-        <button class="tabbtn" data-view="infraView" role="tab" aria-selected="false">Infrastruktur</button>
+        <button class="tabbtn" data-view="infraView" role="tab" aria-selected="false">Infrastructure</button>
       </div>
-      <div class="actions" aria-label="Globale Aktionen">
-        <button class="secondary" data-view="settingsView" role="tab" aria-selected="false">Einstellungen</button>
+      <div class="actions" aria-label="Global actions">
+        <button class="secondary" data-view="settingsView" role="tab" aria-selected="false">Settings</button>
       </div>
     </div>
 
@@ -36,15 +36,30 @@
     <section id="infraView" class="hidden"></section>
     <section id="settingsView" class="hidden"></section>
 
-    <footer class="appFooter">
-      <div class="appFooter__inner">
-        <div>© 2026 Deutsche Telekom MMS GmbH – X.400 Plattform · X4Infra Manager</div>
-        <div class="appFooter__meta">
-          Author: Andreas Schlaupitz · <a href="mailto:a.schlaupitz@telekom.de">a.schlaupitz@telekom.de</a>
-        </div>
+    <footer class="ff-footer">
+      <div class="ff-footer-left">
+        <a href="DISCORD_SUPPORT_LINK" title="Discord Support" target="_blank" rel="noopener">
+          <img src="assets/img/discord-32.png" width="32" height="32" alt="Discord">
+        </a>
+        <a href="GITHUB_REPO_LINK" title="Source Code on GitHub" target="_blank" rel="noopener">
+          <img src="assets/img/github-8-32.png" width="32" height="32" alt="GitHub">
+        </a>
+      </div>
+
+      <div class="ff-footer-center">
+        <div class="ff-copy">© 2026 Andreas Schlaupitz — <strong>FlowForge LE</strong></div>
+        <div class="ff-tagline">Where network flows are forged.</div>
+      </div>
+
+      <div class="ff-footer-right">
+        <a href="https://buymeacoffee.com/crytix" title="Buy me a coffee" target="_blank" rel="noopener">
+          <img src="assets/img/coffee-2-16.png" width="16" height="16" alt="Buy me a coffee">
+          <span>Buy me a coffee</span>
+        </a>
       </div>
     </footer>
-  </main>
+
+</main>
 
   <script src="assets/js/state.js"></script>
   <script src="assets/js/ui.js"></script>

@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — State & Configuration Lifecycle
+  FlowForge LE — State & Configuration Lifecycle
 
   Resolution order:
   1) localStorage
@@ -11,11 +11,12 @@
   "use strict";
 
   window.CFG = null;
-  const STORAGE_KEY = "x4infra_manager_config";
+  const STORAGE_KEY = "flowforge_le_config";
+  const LEGACY_STORAGE_KEY = "x4infra_manager_config";
 
   const INTERNAL_DEFAULT = {
-    meta: { app: "X4Infra Manager", version: "1.1" },
-    debian: { udevPath: "/etc/udev/rules.d/10-x4infra-ifnames.rules", disablePredictable: true },
+    meta: { app: "FlowForge LE", version: "2.7" },
+    debian: { udevPath: "/etc/udev/rules.d/10-flowforge-ifnames.rules", disablePredictable: true },
     envs: [],
     zones: [],
     vlans: [],
@@ -26,11 +27,12 @@
 
   function loadFromLocalStorage() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) raw = localStorage.getItem(LEGACY_STORAGE_KEY);
       if (!raw) return null;
       return JSON.parse(raw);
     } catch (err) {
-      console.warn("[X4Infra] Failed to parse localStorage config, ignoring.", err);
+      console.warn("[FlowForge] Failed to parse localStorage config, ignoring.", err);
       return null;
     }
   }
@@ -39,7 +41,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(window.CFG));
     } catch (err) {
-      console.error("[X4Infra] Failed to save config to localStorage.", err);
+      console.error("[FlowForge] Failed to save config to localStorage.", err);
     }
   }
 
@@ -52,7 +54,7 @@
   function normalizeConfig(cfg) {
     // Backward compatibility: older configs may not have zones or vlans.scopes
     cfg = cfg || {};
-    cfg.meta = cfg.meta || { app: "X4Infra Manager" };
+    cfg.meta = cfg.meta || { app: "FlowForge Manager" };
     cfg.debian = cfg.debian || INTERNAL_DEFAULT.debian;
 
     cfg.envs = Array.isArray(cfg.envs) ? cfg.envs : [];
@@ -194,7 +196,7 @@
     const stored = loadFromLocalStorage();
     if (stored) {
       window.CFG = normalizeConfig(stored);
-      console.info("[X4Infra] Configuration loaded from localStorage.");
+      console.info("[FlowForge] Configuration loaded from localStorage.");
       saveToLocalStorage();
       return;
     }
@@ -203,15 +205,15 @@
       const fileCfg = await loadFromDefaultFile();
       window.CFG = normalizeConfig(fileCfg);
       saveToLocalStorage();
-      console.info("[X4Infra] Default configuration loaded from conf/.");
+      console.info("[FlowForge] Default configuration loaded from conf/.");
       return;
     } catch (err) {
-      console.warn("[X4Infra] Default config file not available.", err);
+      console.warn("[FlowForge] Default config file not available.", err);
     }
 
     window.CFG = structuredClone(INTERNAL_DEFAULT);
     saveToLocalStorage();
-    console.info("[X4Infra] Internal fallback configuration initialized.");
+    console.info("[FlowForge] Internal fallback configuration initialized.");
   };
 
   window.saveConfig = function saveConfig() {

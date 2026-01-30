@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — Settings View
+  FlowForge LE — Settings View
 
   Purpose:
   - Config import/export/reset
@@ -14,7 +14,7 @@
       <div class="settingsWide">
         <div class="card">
           <div class="hd">
-            <h2>Einstellungen / Konfiguration</h2>
+            <h2>Settings / Configuration</h2>
             <div class="rowActions">
               <button class="secondary" id="cfgLoadBtn">Config laden</button>
               <button class="secondary" id="cfgSaveBtn">Config speichern</button>
@@ -25,16 +25,16 @@
 
           <div class="bd">
             <div class="rowActions" style="justify-content:flex-end;margin-bottom:10px">
-              <button id="cfgApplyBtn">Übernehmen</button>
+              <button id="cfgApplyBtn">Apply</button>
               
             </div>
 
-            <label>Aktive Konfiguration (JSON, schreibgeschützt)</label>
+            <label>Active configuration (JSON, read-only)</label>
             <textarea id="cfgPreview" readonly></textarea>
 
             <div class="hint small" style="margin-top:10px">
-              Standard-Konfigurationsquelle: <code>conf/x4infra.default.json</code><br>
-              Änderungen werden im Browser gespeichert (localStorage). Export erzeugt einen Download.
+              Standard-Configurationsquelle: <code>conf/x4infra.default.json</code><br>
+              Changes are stored in the browser (localStorage). Export triggers a download.
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@
           window.saveConfig();
 
           $("#cfgPreview").val(JSON.stringify(window.CFG, null, 2));
-          window.setStatus("#cfgStatus", "Konfiguration geladen.", "ok");
+          window.setStatus("#cfgStatus", "Configuration geladen.", "ok");
 
           // refresh all
           [
@@ -71,7 +71,7 @@
             "renderGeneratorView"
           ].forEach(fn => typeof window[fn] === "function" && window[fn]());
         } catch {
-          window.setStatus("#cfgStatus", "Ungültige JSON-Datei.", "bad");
+          window.setStatus("#cfgStatus", "Invalid JSON file.", "bad");
         }
       };
       reader.readAsText(file);
@@ -81,20 +81,20 @@
     $("#cfgSaveBtn").on("click", () => {
       const content = JSON.stringify(window.CFG, null, 2);
       window.downloadFile("x4infra.config.json", content, "application/json");
-      window.setStatus("#cfgStatus", "Konfiguration exportiert.", "ok");
+      window.setStatus("#cfgStatus", "Configuration exportiert.", "ok");
     });
 
     $("#cfgApplyBtn").on("click", () => {
       window.saveConfig();
-      window.setStatus("#cfgStatus", "Konfiguration übernommen.", "ok");
+      window.setStatus("#cfgStatus", "Configuration applied.", "ok");
     });
 
     $("#cfgResetBtn").on("click", async () => {
-      if (!confirm("Konfiguration wirklich zurücksetzen?")) return;
+      if (!confirm("Reset configuration?")) return;
 
       await window.resetConfig();
       $("#cfgPreview").val(JSON.stringify(window.CFG, null, 2));
-      window.setStatus("#cfgStatus", "Konfiguration zurückgesetzt.", "warn");
+      window.setStatus("#cfgStatus", "Configuration reset.", "warn");
 
       [
         "renderInfraView",

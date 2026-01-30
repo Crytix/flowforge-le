@@ -1,9 +1,9 @@
 /*
-  X4Infra Manager — Infrastructure View
+  FlowForge LE — Infrastructure View
 
   Implemented:
   - Sections stacked vertically (full width) in this order:
-    1) Umgebungen
+    1) Environments
     2) Zonen (blocked until >=1 environment)
     3) Netzwerke/VLANs (blocked until >=1 zone)
     4) Firewalls (blocked until >=1 VLAN)
@@ -38,7 +38,7 @@
 
         <div class="blockedWrap">
           ${renderZonesSection()}
-          ${envBlocked ? renderBlockedOverlay("Zonen sind erst nutzbar, wenn mindestens eine Umgebung angelegt wurde.") : ""}
+          ${envBlocked ? renderBlockedOverlay("Zones are available after you create at least one environment.") : ""}
         </div>
 
         <div class="blockedWrap">
@@ -48,7 +48,7 @@
 
         <div class="blockedWrap">
           ${renderFirewallsSection()}
-          ${vlanBlocked ? renderBlockedOverlay("Firewalls sind erst nutzbar, wenn mindestens ein Netzwerk/VLAN angelegt wurde.") : ""}
+          ${vlanBlocked ? renderBlockedOverlay("Firewalls are available after you create at least one network/VLAN.") : ""}
         </div>
       </div>
     `;
@@ -63,8 +63,8 @@
     return `
       <div class="card">
         <div class="hd">
-          <h2>Umgebungen</h2>
-          <button class="secondary" id="btnAddEnv">+ Umgebung</button>
+          <h2>Environments</h2>
+          <button class="secondary" id="btnAddEnv">+ Environment</button>
         </div>
         <div class="bd" style="overflow:auto">
           ${renderEnvTable()}
@@ -78,7 +78,7 @@
     return `
       <div class="card">
         <div class="hd">
-          <h2>Zonen</h2>
+          <h2>Zones</h2>
           <button class="secondary" id="btnAddZone" ${disabled ? "disabled" : ""}>+ Zone</button>
         </div>
         <div class="bd" style="overflow:auto">
@@ -93,7 +93,7 @@
     return `
       <div class="card">
         <div class="hd">
-          <h2>Netzwerke / VLANs</h2>
+          <h2>Networks / VLANs</h2>
           <button class="secondary" id="btnAddVlan" ${disabled ? "disabled" : ""}>+ VLAN</button>
         </div>
         <div class="bd" style="overflow:auto">
@@ -122,7 +122,7 @@
     return `
       <div class="blockedOverlay" aria-hidden="true">
         <div class="blockedMsg">
-          <div class="ttl">Bereich gesperrt</div>
+          <div class="ttl">Section locked</div>
           <div class="txt">${esc(text)}</div>
         </div>
       </div>
@@ -154,11 +154,11 @@
             <th>Name</th>
             <th>Tag</th>
             <th>Domain</th>
-            <th>Kommentar</th>
+            <th>Comment</th>
             <th></th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="5" class="hint">Keine Umgebungen.</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="5" class="hint">No environments.</td></tr>`}</tbody>
       </table>
     `;
   }
@@ -184,11 +184,11 @@
           <tr>
             <th>Name</th>
             <th>Tag</th>
-            <th>Umgebungen</th>
+            <th>Environments</th>
             <th></th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="4" class="hint">Keine Zonen.</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="4" class="hint">No zones.</td></tr>`}</tbody>
       </table>
     `;
   }
@@ -218,11 +218,11 @@
             <th>VLAN ID</th>
             <th>CIDR</th>
             <th>Interface</th>
-            <th>Umgebung/Zone + Gateways</th>
+            <th>Environment/Zone + Gateways</th>
             <th></th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="6" class="hint">Keine VLANs.</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="6" class="hint">No VLANs.</td></tr>`}</tbody>
       </table>
     `;
   }
@@ -263,11 +263,11 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Umgebung/Zone</th>
+            <th>Environment/Zone</th>
             <th></th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="3" class="hint">Keine Firewalls.</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="3" class="hint">No firewalls.</td></tr>`}</tbody>
       </table>
     `;
   }
@@ -321,7 +321,7 @@
     if (!arr || !arr[idx]) return;
 
     const name = arr[idx].name || arr[idx].tag || "";
-    if (!confirm(`"${name}" wirklich löschen?`)) return;
+    if (!confirm(`"${name}" delete this item?`)) return;
 
     arr.splice(idx, 1);
     saveAndRefresh();
@@ -348,24 +348,24 @@
         </div>
         <div>
           <label for="mEnvTag">Tag</label>
-          <input id="mEnvTag" required data-x4-label="Tag" value="${escA(item.tag)}" placeholder="z.B. PRD" />
+          <input id="mEnvTag" required data-x4-label="Tag" value="${escA(item.tag)}" placeholder="e.g. PRD" />
         </div>
       </div>
 
       <div class="two" style="margin-top:10px">
         <div>
           <label for="mEnvDomain">Domain (optional)</label>
-          <input id="mEnvDomain" value="${escA(item.domain)}" placeholder="z.B. prd.example.local" />
+          <input id="mEnvDomain" value="${escA(item.domain)}" placeholder="e.g. prd.example.local" />
         </div>
         <div>
-          <label for="mEnvComment">Kommentar</label>
+          <label for="mEnvComment">Comment</label>
           <input id="mEnvComment" value="${escA(item.comment)}" />
         </div>
       </div>
     `;
 
     window.X4Modal.open({
-      title: isEdit ? "Umgebung bearbeiten" : "Umgebung anlegen",
+      title: isEdit ? "Edit environment" : "Create environment",
       bodyHtml: body,
       onSave: () => {
         const req = window.x4ValidateRequired("#x4ModalBack");
@@ -400,13 +400,13 @@
         </div>
         <div>
           <label for="mZoneTag">Tag</label>
-          <input id="mZoneTag" required data-x4-label="Tag" value="${escA(item.tag)}" placeholder="z.B. DMZ" />
+          <input id="mZoneTag" required data-x4-label="Tag" value="${escA(item.tag)}" placeholder="e.g. DMZ" />
         </div>
       </div>
 
       <div style="margin-top:10px">
-        <label>Umgebungen (Tags)</label>
-        <input type="hidden" id="mZoneEnvReq" required data-x4-label="Umgebungen" value="${escA((item.envTags || []).join(","))}">
+        <label>Environments (Tags)</label>
+        <input type="hidden" id="mZoneEnvReq" required data-x4-label="Environments" value="${escA((item.envTags || []).join(","))}">
         <div class="tagGrid" id="mZoneEnvTags">
           ${envTagsAll.map(t => renderToggleTag(t, (item.envTags || []).includes(t))).join("")}
         </div>
@@ -414,7 +414,7 @@
     `;
 
     window.X4Modal.open({
-      title: isEdit ? "Zone bearbeiten" : "Zone anlegen",
+      title: isEdit ? "Edit zone" : "Create zone",
       bodyHtml: body,
       onSave: () => {
         // sync hidden required field
@@ -454,25 +454,25 @@
         </div>
         <div>
           <label for="mVlanId">VLAN ID</label>
-          <input id="mVlanId" required data-x4-label="VLAN ID" value="${escA(item.vlanId)}" placeholder="z.B. 210" />
+          <input id="mVlanId" required data-x4-label="VLAN ID" value="${escA(item.vlanId)}" placeholder="e.g. 210" />
         </div>
       </div>
 
       <div class="two" style="margin-top:10px">
         <div>
           <label for="mVlanCidr">CIDR</label>
-          <input id="mVlanCidr" required data-x4-label="CIDR" value="${escA(item.cidr)}" placeholder="z.B. 10.10.10.0/24" />
+          <input id="mVlanCidr" required data-x4-label="CIDR" value="${escA(item.cidr)}" placeholder="e.g. 10.10.10.0/24" />
         </div>
         <div>
           <label for="mVlanIface">Interface (Tag)</label>
-          <input id="mVlanIface" required data-x4-label="Interface" value="${escA(item.iface)}" placeholder="z.B. mgmt" />
+          <input id="mVlanIface" required data-x4-label="Interface" value="${escA(item.iface)}" placeholder="e.g. mgmt" />
           ${ifaceExisting}
         </div>
       </div>
 
       <div style="margin-top:10px">
-        <label>Umgebung/Zone Auswahl (kombinierte Tags)</label>
-        <input type="hidden" id="mVlanCombosReq" required data-x4-label="Umgebung/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
+        <label>Environment/Zone Auswahl (kombinierte Tags)</label>
+        <input type="hidden" id="mVlanCombosReq" required data-x4-label="Environment/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
         <div class="tagGrid" id="mVlanCombos">
           ${combos.map(c => renderToggleTag(c.label, selectedKeys.has(`${c.envTag}::${c.zoneTag}`), c.envTag, c.zoneTag)).join("")}
         </div>
@@ -481,8 +481,8 @@
       <div style="margin-top:10px">
         <div class="inlineBox">
           <div class="miniHd">
-            <div class="ttl">Gateways je Umgebung/Zone-Kombination</div>
-            <div class="hint small">Felder erscheinen für jede ausgewählte Kombination.</div>
+            <div class="ttl">Gateways je Environment/Zone-Kombination</div>
+            <div class="hint small">Fields appear for each selected combination.</div>
           </div>
           <div id="mVlanGwArea"></div>
         </div>
@@ -490,7 +490,7 @@
     `;
 
     window.X4Modal.open({
-      title: isEdit ? "VLAN bearbeiten" : "VLAN anlegen",
+      title: isEdit ? "Edit VLAN" : "Create VLAN",
       bodyHtml: body,
       onOpen: () => {
         // interface quick pick
@@ -544,8 +544,8 @@
         <input id="mFwName" required data-x4-label="Name" value="${escA(item.name)}" />
       </div>
       <div style="margin-top:10px">
-        <label>Umgebung/Zone (kombiniert)</label>
-        <input type="hidden" id="mFwCombosReq" required data-x4-label="Umgebung/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
+        <label>Environment/Zone (kombiniert)</label>
+        <input type="hidden" id="mFwCombosReq" required data-x4-label="Environment/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
         <div class="tagGrid" id="mFwCombos">
           ${combos.map(c => renderToggleTag(c.label, selectedKeys.has(`${c.envTag}::${c.zoneTag}`), c.envTag, c.zoneTag)).join("")}
         </div>
@@ -553,7 +553,7 @@
     `;
 
     window.X4Modal.open({
-      title: isEdit ? "Firewall bearbeiten" : "Firewall anlegen",
+      title: isEdit ? "Edit firewall" : "Create firewall",
       bodyHtml: body,
       onSave: () => {
         const chosen = collectComboTags("#mFwCombos");
@@ -592,7 +592,7 @@
     }, {});
 
     if (!chosen.length) {
-      $("#mVlanGwArea").html(`<div class="hint small">Keine Kombination ausgewählt.</div>`);
+      $("#mVlanGwArea").html(`<div class="hint small">No combination selected.</div>`);
       return;
     }
 
@@ -620,7 +620,7 @@
     const isDelete = kind === "delete";
     const cls = `iconBtn ${isDelete ? "danger" : ""}`;
     const symbol = isDelete ? "🗑" : "✎";
-    const title = isDelete ? "Löschen" : "Bearbeiten";
+    const title = isDelete ? "Delete" : "Edit";
     return `<button class="${cls}" title="${title}" data-infra-action="${kind}" data-infra-type="${type}" data-infra-idx="${idx}">${symbol}</button>`;
   }
 

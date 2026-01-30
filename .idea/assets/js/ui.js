@@ -1,5 +1,5 @@
 /*
-  X4Infra Manager — UI Router & Shared UI Utilities
+  FlowForge LE — UI Router & Shared UI Utilities
 
   Includes:
   - View navigation
@@ -284,7 +284,7 @@
       hint.className = "fieldHint";
       wrap.appendChild(hint);
     }
-    hint.textContent = text || "Pflichtfeld";
+    hint.textContent = text || "Required field";
     return hint;
   }
 
@@ -345,13 +345,13 @@
         el.nextElementSibling.classList.add("is-invalid");
       }
 
-      ensureHint(el, el.getAttribute("data-x4-hint") || "Pflichtfeld");
+      ensureHint(el, el.getAttribute("data-x4-hint") || "Required field");
 
-      const lblTxt = (el.getAttribute("data-x4-label") || (findLabelFor(el)?.textContent || "Pflichtfeld"))
+      const lblTxt = (el.getAttribute("data-x4-label") || (findLabelFor(el)?.textContent || "Required field"))
         .replace(/\s*\*\s*$/, "")
         .trim();
 
-      const msg = `${lblTxt} muss ausgefüllt werden.`;
+      const msg = `${lblTxt} is required.`;
       // Focus first invalid for convenience
       try { el.focus(); } catch (_) {}
       return { ok: false, msg };
@@ -390,7 +390,7 @@
   window.x4IconBtn = function x4IconBtn(action, type, idx) {
     const isDelete = action === "delete";
     const cls = `iconBtn ${isDelete ? "danger" : ""}`.trim();
-    const title = isDelete ? "Löschen" : "Bearbeiten";
+    const title = isDelete ? "Delete" : "Edit";
     const symbol = isDelete ? "🗑" : "✎";
     return `<button class="${cls}" title="${title}" data-x4-action="${action}" data-x4-type="${window.x4EscapeAttr(type)}" data-x4-idx="${idx}">${symbol}</button>`;
   };
@@ -408,7 +408,7 @@
     return `
       <div class="blockedOverlay" aria-hidden="true">
         <div class="blockedMsg">
-          <div class="ttl">Bereich gesperrt</div>
+          <div class="ttl">Section locked</div>
           <div class="txt">${window.x4EscapeHtml(text || "")}</div>
         </div>
       </div>
@@ -461,14 +461,14 @@
           <div class="modal" role="dialog" aria-modal="true">
             <div class="modalHd">
               <div class="ttl">${window.x4EscapeHtml(title || "")}</div>
-              <button class="secondary" id="mClose">Schließen</button>
+              <button class="secondary" id="mClose">Close</button>
             </div>
             <div class="modalBd">
               ${bodyHtml || ""}
             </div>
             <div class="modalFt">
-              <button class="secondary" id="mCancel">Abbrechen</button>
-              <button id="mSave">Speichern</button>
+              <button class="secondary" id="mCancel">Cancel</button>
+              <button id="mSave">Save</button>
             </div>
           </div>
         </div>
@@ -489,7 +489,7 @@
 
         const res = onSave();
         if (res && res.ok === false) {
-          const msg = String(res.msg || "Fehler").trim();
+          const msg = String(res.msg || "Error").trim();
           if (msg) window.toast.critical(msg);
           return;
         }

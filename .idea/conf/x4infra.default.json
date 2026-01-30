@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "app": "X4Infra Manager",
+    "platform": "X.400 Plattform",
+    "company": "Deutsche Telekom MMS GmbH",
+    "author": "Andreas Schlaupitz",
+    "contact": "a.schlaupitz@telekom.de",
+    "version": "1.1"
+  },
+  "debian": {
+    "udevPath": "/etc/udev/rules.d/10-x4infra-ifnames.rules",
+    "disablePredictable": true
+  },
+  "envs": [
+    { "name": "Development", "tag": "DEV", "comment": "Entwicklung / Test" },
+    { "name": "Production", "tag": "PRD", "comment": "Produktivbetrieb" }
+  ],
+  "zones": [
+    { "name": "Core", "tag": "CORE", "envTags": ["DEV", "PRD"] }
+  ],
+  "vlans": [
+    {
+      "name": "Management",
+      "vlanId": "30",
+      "cidr": "10.10.30.0/24",
+      "iface": "mgmt",
+      "scopes": [
+        { "envTag": "DEV", "zoneTag": "CORE", "gwDefault": "10.10.30.1", "gwFallback": "" },
+        { "envTag": "PRD", "zoneTag": "CORE", "gwDefault": "10.10.30.1", "gwFallback": "10.10.30.254" }
+      ]
+    },
+    {
+      "name": "Internal",
+      "vlanId": "50",
+      "cidr": "10.20.0.0/24",
+      "iface": "lan",
+      "scopes": [
+        { "envTag": "PRD", "zoneTag": "CORE", "gwDefault": "10.20.0.1", "gwFallback": "" }
+      ]
+    }
+  ],
+  "firewalls": [
+    { "name": "fw-core", "scopes": [{ "envTag": "PRD", "zoneTag": "CORE" }] }
+  ],
+  "services": [
+    {
+      "name": "SSH",
+      "proto": "tcp",
+      "ports": "22",
+      "comment": "Administration",
+      "portItems": [{"proto":"TCP","value":"22"}]
+    },
+    {
+      "name": "Postgres",
+      "proto": "tcp",
+      "ports": "5432",
+      "comment": "Database",
+      "portItems": [{"proto":"TCP","value":"5432"}]
+    }
+  ],
+  "servers": [
+    {
+      "name": "srv-prd-01",
+      "octet": "11",
+      "envs": ["PRD"],
+      "vlans": ["Management", "Internal"],
+      "services": ["SSH", "Postgres"]
+    }
+  ]
+}

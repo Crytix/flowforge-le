@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>X4Infra Manager</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body>
+  <header class="appHeader">
+    <div class="appHeader__inner">
+      <h1 class="appTitle">X4Infra Manager</h1>
+      <div class="appSubtitle">X.400 Plattform – Infrastruktur, Routing, Firewall- und Debian-Interface-Konfiguration</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="topbar">
+      <div class="tabs" role="tablist" aria-label="X4Infra Manager Navigation">
+        <button class="tabbtn active" data-view="generatorView" role="tab" aria-selected="true">Firewall & Routen</button>
+        <button class="tabbtn" data-view="provisioningView" role="tab" aria-selected="false">Network Provisioning</button>
+        <button class="tabbtn" data-view="serversView" role="tab" aria-selected="false">Server</button>
+        <button class="tabbtn" data-view="servicesView" role="tab" aria-selected="false">Services</button>
+        <button class="tabbtn" data-view="infraView" role="tab" aria-selected="false">Infrastruktur</button>
+      </div>
+      <div class="actions" aria-label="Globale Aktionen">
+        <button class="secondary" data-view="settingsView" role="tab" aria-selected="false">Einstellungen</button>
+      </div>
+    </div>
+
+    <section id="generatorView"></section>
+    <section id="provisioningView" class="hidden"></section>
+    <section id="serversView" class="hidden"></section>
+    <section id="servicesView" class="hidden"></section>
+    <section id="infraView" class="hidden"></section>
+    <section id="settingsView" class="hidden"></section>
+
+    <footer class="appFooter">
+      <div class="appFooter__inner">
+        <div>© 2026 Deutsche Telekom MMS GmbH – X.400 Plattform · X4Infra Manager</div>
+        <div class="appFooter__meta">
+          Author: Andreas Schlaupitz · <a href="mailto:a.schlaupitz@telekom.de">a.schlaupitz@telekom.de</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="assets/js/state.js"></script>
+  <script src="assets/js/ui.js"></script>
+
+  <script src="assets/js/views/generator.js"></script>
+    <script src="assets/js/views/provisioning.js"></script>
+  <script src="assets/js/views/servers.js"></script>
+  <script src="assets/js/views/services.js"></script>
+  <script src="assets/js/views/infra.js"></script>
+  <script src="assets/js/views/settings.js"></script>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -46,12 +46,12 @@
             <div class="two" style="margin-bottom:10px">
               <div>
                 <label>Firewall</label>
-                <label class="x4Switch" for="genBidir" style="margin-top:6px">
-                  <input type="checkbox" id="genBidir" />
-                  <span class="x4SwitchTrack" aria-hidden="true"><span class="x4SwitchThumb"></span></span>
-                  <span class="x4SwitchText">Bidirektional</span>
-                </label>
-                <div class="hint small">Standard: aus (nur Quelle → Ziel).</div>
+                <input id="genBidir" type="hidden" value="off" />
+                <div class="x4BoolSlider" data-for="genBidir" data-active="off" style="margin-top:6px">
+                  <button type="button" class="on" data-val="off">OFF</button>
+                  <button type="button" class="off" data-val="on">ON</button>
+                </div>
+                <div class="hint small">Standard: OFF (nur Quelle → Ziel).</div>
               </div>
               <div>
                 <label class="req" for="genEnv">Umgebung</label>
@@ -229,23 +229,27 @@ function getEndpointType(which) {
       refreshEndpointSelectors();
       refreshViaVlanOptions();
     });
-      // Segmented sliders
-    $("#generatorView").off("click.genSwitch").on("click.genSwitch", ".x4TypeSlider button", function () {
-      const $btn = $(this);
-      const val = $btn.attr("data-val");
-      const $sw = $btn.closest(".x4TypeSlider");
-      const forId = $sw.attr("data-for");
-      if (!forId) return;
-      $("#" + forId).val(val);
+    // Segmented sliders (Server/VLAN + OFF/ON)
+    $("#generatorView")
+      .off("click.genSwitch")
+      .on("click.genSwitch", ".x4TypeSlider button, .x4BoolSlider button", function () {
+        const $btn = $(this);
+        const val = $btn.attr("data-val");
+        const $sw = $btn.closest(".x4TypeSlider, .x4BoolSlider");
+        const forId = $sw.attr("data-for");
+        if (!forId) return;
 
-      $sw.attr('data-active', val);
+        $("#" + forId).val(val);
+        $sw.attr("data-active", val);
 
-      // update visual
-      $btn.siblings("button").removeClass("on").addClass("off");
-      $btn.removeClass("off").addClass("on");
+        // update visual
+        $btn.siblings("button").removeClass("on").addClass("off");
+        $btn.removeClass("off").addClass("on");
 
-      refreshEndpointSelectors();
-    });
+        if (forId === "genSrcType" || forId === "genDstType") {
+          refreshEndpointSelectors();
+        }
+      });
 
     // Required validation cleanup as user interacts
     $("#generatorView").on("change input", "select[required],input[required]", function () {
@@ -584,7 +588,7 @@ function getEndpointType(which) {
     const routesText = formatRoutes(routesByServer, env);
 
     // Firewall rules per selected service port item, bidirectional
-    const bidir = !!$("#genBidir").prop("checked");
+    const bidir = String($("#genBidir").val() || "off").toLowerCase() === "on";
     const fwByServer = bidir
       ? buildFirewallForServicesBidirectional(src, dst, env, GEN_STATE.services, viaVlan)
       : buildFirewallForServicesForward(src, dst, env, GEN_STATE.services, viaVlan);

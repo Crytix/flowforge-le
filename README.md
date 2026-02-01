@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/edition-local--edition-37474f?style=for-the-badge">
   <img src="https://img.shields.io/badge/status-active-2e7d32?style=for-the-badge">
   <img src="https://img.shields.io/badge/architecture-frontend--only-263238?style=for-the-badge">
-  <img src="https://img.shields.io/badge/state-model-json%2Dbased-455a64?style=for-the-badge">
+  <img src="https://img.shields.io/badge/state_model-json--based-455a64?style=for-the-badge">
 </p>
 
 <p align="center">

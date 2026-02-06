@@ -193,7 +193,7 @@ td.actionsCol .rowActions{justify-content:flex-end}
 .iconBtn.danger:hover{border-color:rgba(251,113,133,.45);box-shadow:0 0 0 3px rgba(251,113,133,.08)}
 
 /* Toasts (top-right notifications) */
-#x4ToastHost{
+#ffToastHost{
   position:fixed;
   /* Keep toasts high so they don't cover header actions (e.g. Settings) */
   top:8px;
@@ -231,7 +231,7 @@ label.req::after{
   color:rgba(239,68,68,.9);
 }
 
-.x4Toast{
+.ffToast{
   pointer-events:auto;
   display:grid;
   grid-template-columns:22px 1fr 28px;
@@ -243,15 +243,15 @@ label.req::after{
   background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
   box-shadow: 0 18px 60px rgba(0,0,0,.45);
   backdrop-filter: blur(6px);
-  animation:x4ToastIn .22s ease both;
+  animation:ffToastIn .22s ease both;
 }
 
-.x4Toast__icon{display:flex;align-items:center;justify-content:center;opacity:.95;line-height:1.1}
-.x4Toast__icon svg{display:block}
-.x4Toast__msg{font-size:12px;color:var(--text);line-height:1.35}
-.x4Toast__count{margin-left:8px;font-family:var(--mono);color:var(--muted)}
+.ffToast__icon{display:flex;align-items:center;justify-content:center;opacity:.95;line-height:1.1}
+.ffToast__icon svg{display:block}
+.ffToast__msg{font-size:12px;color:var(--text);line-height:1.35}
+.ffToast__count{margin-left:8px;font-family:var(--mono);color:var(--muted)}
 
-.x4Toast__close{
+.ffToast__close{
   border:1px solid #2a3a56;
   background:rgba(255,255,255,.06);
   color:var(--text);
@@ -261,32 +261,32 @@ label.req::after{
   font-weight:900;
   line-height:1;
 }
-.x4Toast__close:hover{border-color:rgba(56,189,248,.35);box-shadow:0 0 0 3px rgba(56,189,248,.06)}
+.ffToast__close:hover{border-color:rgba(56,189,248,.35);box-shadow:0 0 0 3px rgba(56,189,248,.06)}
 
 /* Level styling: tinted fill + icon color */
-.x4Toast--info{border-color:rgba(56,189,248,.28);background:linear-gradient(180deg, rgba(56,189,248,.18), rgba(56,189,248,.07))}
-.x4Toast--info .x4Toast__icon{color:rgba(56,189,248,.95)}
+.ffToast--info{border-color:rgba(56,189,248,.28);background:linear-gradient(180deg, rgba(56,189,248,.18), rgba(56,189,248,.07))}
+.ffToast--info .ffToast__icon{color:rgba(56,189,248,.95)}
 
-.x4Toast--warning{border-color:rgba(251,191,36,.35);background:linear-gradient(180deg, rgba(251,191,36,.20), rgba(251,191,36,.08))}
-.x4Toast--warning .x4Toast__icon{color:rgba(251,191,36,.95)}
+.ffToast--warning{border-color:rgba(251,191,36,.35);background:linear-gradient(180deg, rgba(251,191,36,.20), rgba(251,191,36,.08))}
+.ffToast--warning .ffToast__icon{color:rgba(251,191,36,.95)}
 
-.x4Toast--critical{border-color:rgba(251,113,133,.4);background:linear-gradient(180deg, rgba(251,113,133,.20), rgba(251,113,133,.08))}
-.x4Toast--critical .x4Toast__icon{color:rgba(251,113,133,.95)}
+.ffToast--critical{border-color:rgba(251,113,133,.4);background:linear-gradient(180deg, rgba(251,113,133,.20), rgba(251,113,133,.08))}
+.ffToast--critical .ffToast__icon{color:rgba(251,113,133,.95)}
 
-.x4Toast.closing{animation:x4ToastOut .22s ease both}
+.ffToast.closing{animation:ffToastOut .22s ease both}
 
-@keyframes x4ToastIn{
+@keyframes ffToastIn{
   from{opacity:0;transform:translateY(-10px)}
   to{opacity:1;transform:translateY(0)}
 }
-@keyframes x4ToastOut{
+@keyframes ffToastOut{
   from{opacity:1;transform:translateY(0)}
   to{opacity:0;transform:translateY(-10px)}
 }
 
 /* Generator output: "Code kopieren" link inside read-only textareas */
-.x4CodeBox{position:relative}
-.x4CodeCopy{
+.ffCodeBox{position:relative}
+.ffCodeCopy{
   position:absolute;
   top:6px;
   right:8px;
@@ -299,14 +299,14 @@ label.req::after{
   border:1px solid rgba(255,255,255,.06);
   pointer-events:auto;
 }
-.x4CodeCopy:hover{
+.ffCodeCopy:hover{
   color:var(--text);
   border-color:rgba(56,189,248,.25);
   box-shadow:0 0 0 3px rgba(56,189,248,.06);
 }
 
 /* Generator: Server/VLAN slider (2-state) */
-.x4TypeSlider{
+.ffTypeSlider{
   position:relative;
   display:flex;
   align-items:center;
@@ -316,7 +316,7 @@ label.req::after{
   background:rgba(255,255,255,.03);
   height:32px;
 }
-.x4TypeSlider::before{
+.ffTypeSlider::before{
   content:"";
   position:absolute;
   top:2px;
@@ -329,8 +329,8 @@ label.req::after{
   transform:translateX(0);
   transition:transform .18s ease;
 }
-.x4TypeSlider[data-active="vlan"]::before{transform:translateX(100%)}
-.x4TypeSlider button{
+.ffTypeSlider[data-active="vlan"]::before{transform:translateX(100%)}
+.ffTypeSlider button{
   flex:1;
   height:100%;
   border:0;
@@ -342,20 +342,20 @@ label.req::after{
   position:relative;
   z-index:1;
 }
-.x4TypeSlider button.on{color:var(--text)}
-.x4TypeSlider button:focus{outline:none}
-.x4TypeSlider button:hover{color:var(--text)}
+.ffTypeSlider button.on{color:var(--text)}
+.ffTypeSlider button:focus{outline:none}
+.ffTypeSlider button:hover{color:var(--text)}
 
 /* Generator: ON/OFF switch (matches slider style) */
-.x4Switch{
+.ffSwitch{
   display:inline-flex;
   align-items:center;
   gap:10px;
   cursor:pointer;
   user-select:none;
 }
-.x4Switch input{position:absolute; opacity:0; pointer-events:none;}
-.x4SwitchTrack{
+.ffSwitch input{position:absolute; opacity:0; pointer-events:none;}
+.ffSwitchTrack{
   width:52px;
   height:32px;
   border:1px solid var(--line);
@@ -365,8 +365,8 @@ label.req::after{
   box-shadow:0 0 0 1px rgba(0,0,0,.12) inset;
   transition:background .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
-.x4SwitchTrack::before,
-.x4SwitchTrack::after{
+.ffSwitchTrack::before,
+.ffSwitchTrack::after{
   position:absolute;
   top:50%;
   transform:translateY(-50%);
@@ -377,9 +377,9 @@ label.req::after{
   opacity:.65;
   pointer-events:none;
 }
-.x4SwitchTrack::before{content:"OFF"; left:8px;}
-.x4SwitchTrack::after{content:"ON"; right:8px;}
-.x4SwitchThumb{
+.ffSwitchTrack::before{content:"OFF"; left:8px;}
+.ffSwitchTrack::after{content:"ON"; right:8px;}
+.ffSwitchThumb{
   position:absolute;
   top:2px;
   left:2px;
@@ -391,30 +391,30 @@ label.req::after{
   transform:translateX(0);
   transition:transform .18s ease, background .18s ease;
 }
-.x4SwitchText{
+.ffSwitchText{
   font-weight:700;
   font-size:12px;
   color:var(--muted);
 }
-.x4Switch input:checked + .x4SwitchTrack{
+.ffSwitch input:checked + .ffSwitchTrack{
   background:rgba(56,189,248,.12);
   border-color:rgba(56,189,248,.35);
   box-shadow:0 0 0 3px rgba(56,189,248,.06);
 }
-.x4Switch input:checked + .x4SwitchTrack::before{opacity:.35;}
-.x4Switch input:checked + .x4SwitchTrack::after{opacity:.85; color:var(--text);}
-.x4Switch input:checked + .x4SwitchTrack .x4SwitchThumb{
+.ffSwitch input:checked + .ffSwitchTrack::before{opacity:.35;}
+.ffSwitch input:checked + .ffSwitchTrack::after{opacity:.85; color:var(--text);}
+.ffSwitch input:checked + .ffSwitchTrack .ffSwitchThumb{
   transform:translateX(20px);
   background:rgba(56,189,248,.18);
 }
-.x4Switch input:checked ~ .x4SwitchText{color:var(--text)}
-.x4Switch:hover .x4SwitchText{color:var(--text)}
-.x4Switch:focus-within .x4SwitchTrack{
+.ffSwitch input:checked ~ .ffSwitchText{color:var(--text)}
+.ffSwitch:hover .ffSwitchText{color:var(--text)}
+.ffSwitch:focus-within .ffSwitchTrack{
   box-shadow:0 0 0 3px rgba(56,189,248,.10);
 }
 
-/* Generator: boolean slider (OFF/ON) — identical look to .x4TypeSlider */
-.x4BoolSlider{
+/* Generator: boolean slider (OFF/ON) — identical look to .ffTypeSlider */
+.ffBoolSlider{
   position:relative;
   display:flex;
   align-items:center;
@@ -424,7 +424,7 @@ label.req::after{
   background:rgba(255,255,255,.03);
   height:32px;
 }
-.x4BoolSlider::before{
+.ffBoolSlider::before{
   content:"";
   position:absolute;
   top:2px;
@@ -437,8 +437,8 @@ label.req::after{
   transform:translateX(0);
   transition:transform .18s ease;
 }
-.x4BoolSlider[data-active="on"]::before{transform:translateX(100%)}
-.x4BoolSlider button{
+.ffBoolSlider[data-active="on"]::before{transform:translateX(100%)}
+.ffBoolSlider button{
   flex:1;
   height:100%;
   border:0;
@@ -450,9 +450,9 @@ label.req::after{
   position:relative;
   z-index:1;
 }
-.x4BoolSlider button.on{color:var(--text)}
-.x4BoolSlider button:focus{outline:none}
-.x4BoolSlider button:hover{color:var(--text)}
+.ffBoolSlider button.on{color:var(--text)}
+.ffBoolSlider button:focus{outline:none}
+.ffBoolSlider button:hover{color:var(--text)}
 
 
 /* FlowForge LE footer */

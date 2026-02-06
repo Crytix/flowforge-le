@@ -29,7 +29,7 @@
 
     const envOptions = (window.CFG.envs || []).map(e => {
       const label = `${e.name || e.tag} (${e.tag})`;
-      return `<option value="${window.x4EscapeAttr(e.tag)}">${window.x4EscapeHtml(label)}</option>`;
+      return `<option value="${window.ffEscapeAttr(e.tag)}">${window.ffEscapeHtml(label)}</option>`;
     }).join("");
 
     const html = `
@@ -47,7 +47,7 @@
               <div>
                 <label>Firewall</label>
                 <input id="genBidir" type="hidden" value="off" />
-                <div class="x4BoolSlider" data-for="genBidir" data-active="off" style="margin-top:6px">
+                <div class="ffBoolSlider" data-for="genBidir" data-active="off" style="margin-top:6px">
                   <button type="button" class="on" data-val="off">OFF</button>
                   <button type="button" class="off" data-val="on">ON</button>
                 </div>
@@ -55,7 +55,7 @@
               </div>
               <div>
                 <label class="req" for="genEnv">Environment</label>
-                <select id="genEnv" required data-x4-label="Environment">${envOptions}</select>
+                <select id="genEnv" required data-ff-label="Environment">${envOptions}</select>
               </div>
             </div>
 
@@ -64,14 +64,14 @@
               <div>
                 <label class="req">Typ</label>
                 <input id="genSrcType" type="hidden" value="server" />
-                <div class="x4TypeSlider" data-for="genSrcType" data-active="server">
+                <div class="ffTypeSlider" data-for="genSrcType" data-active="server">
                   <button type="button" class="on" data-val="server">Server</button>
                   <button type="button" class="off" data-val="vlan">VLAN</button>
                 </div>
               </div>
               <div>
                 <label class="req" for="genSrc">Source</label>
-                <select id="genSrc" required data-x4-label="Source"></select>
+                <select id="genSrc" required data-ff-label="Source"></select>
               </div>
             </div>
 
@@ -80,30 +80,30 @@
               <div>
                 <label class="req">Typ</label>
                 <input id="genDstType" type="hidden" value="server" />
-                <div class="x4TypeSlider" data-for="genDstType" data-active="server">
+                <div class="ffTypeSlider" data-for="genDstType" data-active="server">
                   <button type="button" class="on" data-val="server">Server</button>
                   <button type="button" class="off" data-val="vlan">VLAN</button>
                 </div>
               </div>
               <div>
                 <label class="req" for="genDst">Destination</label>
-                <select id="genDst" required data-x4-label="Destination"></select>
+                <select id="genDst" required data-ff-label="Destination"></select>
               </div>
             </div>
 
             <div class="two" style="margin-bottom:10px">
               <div>
                 <label class="req" for="genViaVlan">Route via (VLAN)</label>
-                <select id="genViaVlan" required data-x4-label="Route via"></select>
+                <select id="genViaVlan" required data-ff-label="Route via"></select>
                 <div class="hint small">Only VLANs in this environment that are available via firewall zones.</div>
               </div>
               <div>
                 <label class="req" for="genMetric">Route metric</label>
-                <input id="genMetric" required data-x4-label="Route metric" type="number" value="100" />
+                <input id="genMetric" required data-ff-label="Route metric" type="number" value="100" />
               </div>
             </div>
 
-            <div class="miniHd" style="margin-top:6px"><div class="ttl">Services</div><button type="button" class="secondary btnIcon" id="genAddServiceBtn" title="Add service"><i class="fa-solid fa-plus"></i> Service</button></div>
+            <div class="miniHd" style="margin-top:6px"><div class="ttl">Services</div><button type="button" class="secondary btnIcon" id="genAddServiceBtn" title="Add service"><i class="fa-solid fa-plus"></i> + Service</button></div>
 
             <div class="tableWrap" style="margin-bottom:10px">
               <table class="tbl" id="genSvcTable">
@@ -135,19 +135,19 @@
           </div>
           <div class="bd">
             <div class="hint">Routing (incl. return route)</div>
-            <div class="x4CodeBox">
-              <a class="x4CodeCopy" href="#" data-copy-for="genOutRoutes" style="display:none">Copy code</a>
+            <div class="ffCodeBox">
+              <a class="ffCodeCopy" href="#" data-copy-for="genOutRoutes" style="display:none">Copy code</a>
               <textarea id="genOutRoutes" readonly style="min-height:180px"></textarea>
             </div>
             <div class="hint" style="margin-top:10px">Firewall</div>
-            <div class="x4CodeBox">
-              <a class="x4CodeCopy" href="#" data-copy-for="genOutFw" style="display:none">Copy code</a>
+            <div class="ffCodeBox">
+              <a class="ffCodeCopy" href="#" data-copy-for="genOutFw" style="display:none">Copy code</a>
               <textarea id="genOutFw" readonly style="min-height:180px"></textarea>
             </div>
 
             <div class="rowActions" style="justify-content:flex-end; margin-top:10px">
-              <button class="secondary" id="genCsvBtn" disabled>CSV</button>
-              <button class="secondary" id="genApplyBtn" disabled>In Server speichern</button>
+              <button class="secondary" id="genCsvBtn" disabled>Download</button>
+              <button class="secondary" id="genApplyBtn" disabled>Apply to servers</button>
             </div>
           </div>
         </div>
@@ -159,7 +159,7 @@
     $view.html(html);
 
     // required UI markers (labels *)
-    window.x4ApplyRequiredUI?.("#generatorView");
+    window.ffApplyRequiredUI?.("#generatorView");
 
     GEN_STATE.services = [];
     refreshEndpointSelectors();
@@ -193,7 +193,7 @@
       <div class="blockedOverlay" aria-hidden="true">
         <div class="blockedMsg">
           <div class="ttl">Section locked</div>
-          <div class="txt">${window.x4EscapeHtml(text || "")}</div>
+          <div class="txt">${window.ffEscapeHtml(text || "")}</div>
         </div>
       </div>
     `;
@@ -212,7 +212,7 @@ function getEndpointType(which) {
 
   function setEndpointType(which, v) {
     $(`#gen${which}Type`).val(v);
-    const $sw = $(`.x4TypeSlider[data-for='gen${which}Type']`);
+    const $sw = $(`.ffTypeSlider[data-for='gen${which}Type']`);
     $sw.attr('data-active', v);
     $sw.find("button").each(function () {
       const on = $(this).attr("data-val") === v;
@@ -229,10 +229,10 @@ function getEndpointType(which) {
     // Segmented sliders (Server/VLAN + OFF/ON)
     $("#generatorView")
       .off("click.genSwitch")
-      .on("click.genSwitch", ".x4TypeSlider button, .x4BoolSlider button", function () {
+      .on("click.genSwitch", ".ffTypeSlider button, .ffBoolSlider button", function () {
         const $btn = $(this);
         const val = $btn.attr("data-val");
-        const $sw = $btn.closest(".x4TypeSlider, .x4BoolSlider");
+        const $sw = $btn.closest(".ffTypeSlider, .ffBoolSlider");
         const forId = $sw.attr("data-for");
         if (!forId) return;
 
@@ -287,14 +287,14 @@ function getEndpointType(which) {
     });
 
     // Output copy links
-    $("#generatorView").on("click", ".x4CodeCopy", async (e) => {
+    $("#generatorView").on("click", ".ffCodeCopy", async (e) => {
       e.preventDefault();
       const id = $(e.currentTarget).attr("data-copy-for");
       const txt = ($(`#${id}`).val() || "").trim();
       if (!txt) return;
       try {
         await navigator.clipboard.writeText(txt);
-        window.toast?.info("Code kopiert.");
+        window.toast?.info("Code copied.");
       } catch {
         window.toast?.critical("Copy not available (browser permissions).");
       }
@@ -316,10 +316,10 @@ function getEndpointType(which) {
 
       $("#genOutRoutes").val(result.routesText);
       $("#genOutFw").val(result.fwText);
-      window.__X4INFRA_GEN_LAST__ = result;
-      window.__X4INFRA_CSV__ = result.csv;
+      window.__CRXHUB_GEN_LAST__ = result;
+      window.__CRXHUB_CSV__ = result.csv;
       updateGeneratedState();
-      window.toast?.info("Output erzeugt.");
+      window.toast?.info("Output generated.");
     });
 
     // Apply
@@ -327,13 +327,13 @@ function getEndpointType(which) {
       const env = getSelectedEnvTag();
       if (!env) return window.toast?.critical("Environment must be selected.");
 
-      const result = window.__X4INFRA_GEN_LAST__;
+      const result = window.__CRXHUB_GEN_LAST__;
       if (!result || (!result.routesByServer && !result.fwByServer)) {
         return window.toast?.warning("Generate output first.");
       }
 
       const applied = applyArtifactsToServers(result.routesByServer, result.fwByServer);
-      if (!applied.ok) return window.toast?.critical(applied.msg || "Konnte nicht speichern.");
+      if (!applied.ok) return window.toast?.critical(applied.msg || "Could not save.");
 
       window.saveConfig();
       if (typeof window.renderServersView === "function") {
@@ -344,10 +344,10 @@ function getEndpointType(which) {
 
     // CSV
     $("#genCsvBtn").on("click", () => {
-      const csv = window.__X4INFRA_CSV__;
+      const csv = window.__CRXHUB_CSV__;
       if (!csv) return window.toast?.warning("Generate output first.");
-      window.downloadFile("x4infra.generator.csv", csv, "text/csv;charset=utf-8");
-      window.toast?.info("CSV exportiert.");
+      window.downloadFile("flowforge.generator.csv", csv, "text/csv;charset=utf-8");
+      window.toast?.info("CSV exported.");
     });
 
     // keep copy link visibility in sync
@@ -538,11 +538,11 @@ function getEndpointType(which) {
       <div class="two" style="margin-bottom:10px">
         <div>
           <label class="req" for="mGenSvc">Service</label>
-          <select id="mGenSvc" required data-x4-label="Service">${svcOptions}</select>
+          <select id="mGenSvc" required data-ff-label="Service">${svcOptions}</select>
         </div>
         <div>
           <label class="req" for="mGenPort">Port / Protocol</label>
-          <select id="mGenPort" required data-x4-label="Port / Protocol"></select>
+          <select id="mGenPort" required data-ff-label="Port / Protocol"></select>
         </div>
       </div>
       <div class="hint small">Comments are hidden here but included in the generated output.</div>
@@ -563,7 +563,7 @@ function getEndpointType(which) {
       return String(val ?? "").trim();
     };
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: "Add service",
       bodyHtml: body,
       onOpen: () => {
@@ -590,7 +590,7 @@ function getEndpointType(which) {
         fillPorts();
       },
       onSave: () => {
-        if (!window.x4ValidateRequired?.("#x4ModalBack")) {
+        if (!window.ffValidateRequired?.("#ffModalBack")) {
           return { ok: false, msg: "Please fill all required fields." };
         }
 
@@ -625,13 +625,13 @@ function getEndpointType(which) {
     $("#genCsvBtn").prop("disabled", !hasOutput);
     $("#genApplyBtn").prop("disabled", !hasOutput);
 
-    $(".x4CodeCopy[data-copy-for='genOutRoutes']").toggle(hasRoutes);
-    $(".x4CodeCopy[data-copy-for='genOutFw']").toggle(hasFw);
+    $(".ffCodeCopy[data-copy-for='genOutRoutes']").toggle(hasRoutes);
+    $(".ffCodeCopy[data-copy-for='genOutFw']").toggle(hasFw);
   }
 
   function validateGeneratorInput() {
     // validate required UI
-    if (!window.x4ValidateRequired?.("#generatorView")) {
+    if (!window.ffValidateRequired?.("#generatorView")) {
       return "Please fill all required fields.";
     }
 

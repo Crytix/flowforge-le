@@ -16,8 +16,8 @@
           <div class="hd">
             <h2>Settings / Configuration</h2>
             <div class="rowActions">
-              <button class="secondary" id="cfgLoadBtn">Config laden</button>
-              <button class="secondary" id="cfgSaveBtn">Config speichern</button>
+              <button class="secondary" id="cfgLoadBtn">Load config</button>
+              <button class="secondary" id="cfgSaveBtn">Save config</button>
               <button class="danger" id="cfgResetBtn">Reset</button>
               <input type="file" id="cfgFileInput" accept="application/json" class="hidden" />
             </div>
@@ -29,12 +29,12 @@
               
             </div>
 
-            <label>Active configuration (JSON, read-only)</label>
-            <textarea id="cfgPreview" readonly></textarea>
+            <label>Active configuration (JSON)</label>
+            <textarea id="cfgPreview" spellcheck="false"></textarea>
 
             <div class="hint small" style="margin-top:10px">
-              Standard-Configurationsquelle: <code>conf/x4infra.default.json</code><br>
-              Changes are stored in the browser (localStorage). Export triggers a download.
+              Default configuration source: <code>conf/flowforge.default.json</code><br>
+              Changes are stored in the browser (localStorage). "Save config" triggers a download.
             </div>
           </div>
         </div>
@@ -56,11 +56,11 @@
       reader.onload = () => {
         try {
           const parsed = JSON.parse(reader.result);
-          window.CFG = parsed;
+          window.CFG = (typeof window.normalizeConfig === "function") ? window.normalizeConfig(parsed) : parsed;
           window.saveConfig();
 
           $("#cfgPreview").val(JSON.stringify(window.CFG, null, 2));
-          window.setStatus("#cfgStatus", "Configuration geladen.", "ok");
+          window.setStatus("#cfgStatus", "Configuration loaded.", "ok");
 
           // refresh all
           [
@@ -80,13 +80,33 @@
 
     $("#cfgSaveBtn").on("click", () => {
       const content = JSON.stringify(window.CFG, null, 2);
-      window.downloadFile("x4infra.config.json", content, "application/json");
-      window.setStatus("#cfgStatus", "Configuration exportiert.", "ok");
+      window.downloadFile("flowforge.config.json", content, "application/json");
+      window.setStatus("#cfgStatus", "Configuration exported.", "ok");
     });
 
     $("#cfgApplyBtn").on("click", () => {
-      window.saveConfig();
-      window.setStatus("#cfgStatus", "Configuration applied.", "ok");
+      // Apply from textarea → CFG → localStorage
+      try {
+        const text = String($("#cfgPreview").val() || "").trim();
+        const parsed = JSON.parse(text || "{}");
+        window.CFG = (typeof window.normalizeConfig === "function") ? window.normalizeConfig(parsed) : parsed;
+        window.saveConfig();
+
+        $("#cfgPreview").removeClass("is-invalid");
+        window.setStatus("#cfgStatus", "Configuration applied.", "ok");
+
+        // refresh all
+        [
+          "renderInfraView",
+          "renderServicesView",
+          "renderServersView",
+          "renderProvisioningView",
+          "renderGeneratorView"
+        ].forEach(fn => typeof window[fn] === "function" && window[fn]());
+      } catch (e) {
+        $("#cfgPreview").addClass("is-invalid");
+        window.setStatus("#cfgStatus", "Invalid JSON in textarea.", "bad");
+      }
     });
 
     $("#cfgResetBtn").on("click", async () => {

@@ -12,6 +12,32 @@
 (() => {
   "use strict";
 
+  window.NAMESPACE = "crx.hub";
+
+  /**
+   * Generate a reasonably unique DOM id.
+   *
+   * This project is intentionally dependency-light; we do not pull in
+   * external UUID libraries. A missing uid() previously caused runtime
+   * exceptions during toast rendering, which then broke several flows
+   * that rely on toast feedback (copy/apply/reset etc.).
+   *
+   * @param {string} [prefix="id"]
+   * @returns {string}
+   */
+  window.uid = window.uid || function uid(prefix = "id") {
+    const p = String(prefix || "id").replaceAll(/[^a-zA-Z0-9_-]/g, "");
+    const rnd = Math.random().toString(36).slice(2, 8);
+    return `${p}-${Date.now().toString(36)}-${rnd}`;
+  };
+
+  /**
+   * Global namespace used for localStorage keys and download filenames.
+   * Keep this stable once published to avoid breaking user configs.
+   * @type {string}
+   */
+
+
   /* ---------------- View routing ---------------- */
 
   function switchView(viewId) {
@@ -35,10 +61,10 @@
   /* ---------------- Toasts ---------------- */
 
   function ensureToastHost() {
-    let host = document.getElementById("x4ToastHost");
+    let host = document.getElementById("ffToastHost");
     if (host) return host;
     host = document.createElement("div");
-    host.id = "x4ToastHost";
+    host.id = "ffToastHost";
     host.setAttribute("aria-live", "polite");
     host.setAttribute("aria-relevant", "additions");
     document.body.appendChild(host);
@@ -49,7 +75,7 @@
   }
 
   function alignToastHostToContent() {
-    const host = document.getElementById("x4ToastHost");
+    const host = document.getElementById("ffToastHost");
     if (!host) return;
 
     // Primary layout container in this project
@@ -113,13 +139,13 @@
   function renderToast({ id, level, message, count }) {
     const lvl = normalizeLevel(level);
     const icon = lvl === "critical" ? iconCriticalSvg() : lvl === "warning" ? iconWarningSvg() : iconInfoSvg();
-    const safe = window.x4EscapeHtml(message || "");
-    const badge = count && count > 1 ? `<span class="x4Toast__count">×${count}</span>` : "";
+    const safe = window.ffEscapeHtml(message || "");
+    const badge = count && count > 1 ? `<span class="ffToast__count">×${count}</span>` : "";
     return `
-      <div class="x4Toast x4Toast--${lvl}" role="status" data-toast-id="${id}">
-        <div class="x4Toast__icon" aria-hidden="true">${icon}</div>
-        <div class="x4Toast__msg">${safe}${badge}</div>
-        <button class="x4Toast__close" type="button" aria-label="Close">✕</button>
+      <div class="ffToast ffToast--${lvl}" role="status" data-toast-id="${id}">
+        <div class="ffToast__icon" aria-hidden="true">${icon}</div>
+        <div class="ffToast__msg">${safe}${badge}</div>
+        <button class="ffToast__close" type="button" aria-label="Close">✕</button>
       </div>
     `;
   }
@@ -146,21 +172,25 @@
   }
 
   function showToast(message, level, opts = {}) {
-    const host = ensureToastHost();
-    const lvl = normalizeLevel(level);
-    const cfg = { ...TOAST_DEFAULTS[lvl], ...opts };
-    const key = toastKey(lvl, message);
-    const ts = nowMs();
+    // Toasts must never crash the app.
+    // If anything goes wrong (DOM, missing helpers, CSP quirks), we degrade
+    // gracefully by logging and returning.
+    try {
+      const host = ensureToastHost();
+      const lvl = normalizeLevel(level);
+      const cfg = { ...TOAST_DEFAULTS[lvl], ...opts };
+      const key = toastKey(lvl, message);
+      const ts = nowMs();
 
     // Dedupe: same message in short window -> increment counter
     const last = toastState.lastByKey.get(key);
     if (last && ts - last.ts <= toastState.dedupeWindowMs) {
       last.count = (last.count || 1) + 1;
       last.ts = ts;
-      const el = host.querySelector(`[data-toast-id="${last.id}"] .x4Toast__msg`);
+      const el = host.querySelector(`[data-toast-id="${last.id}"] .ffToast__msg`);
       if (el) {
-        const safe = window.x4EscapeHtml(message || "");
-        el.innerHTML = `${safe}<span class="x4Toast__count">×${last.count}</span>`;
+        const safe = window.ffEscapeHtml(message || "");
+        el.innerHTML = `${safe}<span class="ffToast__count">×${last.count}</span>`;
       }
       return last.id;
     }
@@ -169,7 +199,7 @@
     toastState.lastByKey.set(key, { id, ts, count: 1 });
 
     // Enforce max visible
-    const existing = host.querySelectorAll(".x4Toast");
+    const existing = host.querySelectorAll(".ffToast");
     if (existing.length >= toastState.maxVisible) {
       const first = existing[existing.length - 1];
       if (first) first.remove();
@@ -180,11 +210,11 @@
     if (!toastEl) return id;
 
     // Close interactions
-    const closeBtn = toastEl.querySelector(".x4Toast__close");
+    const closeBtn = toastEl.querySelector(".ffToast__close");
     if (closeBtn) closeBtn.addEventListener("click", () => removeToast(id));
     toastEl.addEventListener("click", (e) => {
       // click anywhere except selecting text closes (nice UX)
-      if (e.target && e.target.classList && e.target.classList.contains("x4Toast__close")) return;
+      if (e.target && e.target.classList && e.target.classList.contains("ffToast__close")) return;
       removeToast(id);
     });
 
@@ -211,7 +241,11 @@
     toastEl.addEventListener("mouseleave", startTimer);
     startTimer();
 
-    return id;
+      return id;
+    } catch (err) {
+      console.warn("[FlowForge] Toast failed:", err);
+      return null;
+    }
   }
 
   // Public API
@@ -236,7 +270,7 @@
 
   /* ---------------- Escape helpers ---------------- */
 
-  window.x4EscapeHtml = function x4EscapeHtml(v) {
+  window.ffEscapeHtml = function ffEscapeHtml(v) {
     return String(v ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
@@ -245,16 +279,16 @@
       .replaceAll("'", "&#039;");
   };
 
-  window.x4EscapeAttr = function x4EscapeAttr(v) {
-    return window.x4EscapeHtml(v);
+  window.ffEscapeAttr = function ffEscapeAttr(v) {
+    return window.ffEscapeHtml(v);
   };
 
   // Backwards-compatible aliases (older view modules may call these)
   // Keep these names stable to avoid runtime errors.
-  window.escapeHtml = window.x4EscapeHtml;
-  window.escapeAttr = window.x4EscapeAttr;
+  window.escapeHtml = window.ffEscapeHtml;
+  window.escapeAttr = window.ffEscapeAttr;
   window.escapeVal = function escapeVal(v) {
-    return window.x4EscapeHtml(v);
+    return window.ffEscapeHtml(v);
   };
 
   /* ---------------- Required-field UI + validation ---------------- */
@@ -303,7 +337,7 @@
     } catch (_) {}
   }
 
-  window.x4ApplyRequiredUI = function x4ApplyRequiredUI(container) {
+  window.ffApplyRequiredUI = function ffApplyRequiredUI(container) {
     const root = typeof container === "string" ? document.querySelector(container) : container;
     if (!root) return;
 
@@ -325,12 +359,12 @@
     return !String(el.value || "").trim();
   }
 
-  window.x4ValidateRequired = function x4ValidateRequired(container) {
+  window.ffValidateRequired = function ffValidateRequired(container) {
     const root = typeof container === "string" ? document.querySelector(container) : container;
     if (!root) return { ok: true };
 
     // Make sure required labels are marked
-    window.x4ApplyRequiredUI(root);
+    window.ffApplyRequiredUI(root);
 
     const required = Array.from(root.querySelectorAll("input[required], select[required], textarea[required]"))
       .filter((el) => !el.disabled && el.getAttribute("aria-hidden") !== "true");
@@ -345,9 +379,9 @@
         el.nextElementSibling.classList.add("is-invalid");
       }
 
-      ensureHint(el, el.getAttribute("data-x4-hint") || "Required field");
+      ensureHint(el, el.getAttribute("data-ff-hint") || "Required field");
 
-      const lblTxt = (el.getAttribute("data-x4-label") || (findLabelFor(el)?.textContent || "Required field"))
+      const lblTxt = (el.getAttribute("data-ff-label") || (findLabelFor(el)?.textContent || "Required field"))
         .replace(/\s*\*\s*$/, "")
         .trim();
 
@@ -362,81 +396,78 @@
 
   /* ---------------- Utility helpers ---------------- */
 
-  window.downloadFile = function downloadFile(filename, content, mime) {
-    const blob = new Blob([content], { type: mime || "application/octet-stream" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  /*
+    Modal lifecycle helpers
 
-  window.uid = function uid(prefix) {
-    return (prefix || "id") + "_" + Math.random().toString(36).slice(2, 9);
-  };
+    The view modules call FFModal.open() for all Add/Edit actions.
+    FFModal.open() always attempts to close any existing modal first.
+    If closeModal() is missing/undefined, the very first open() call will
+    throw and no modal will ever be rendered.
+  */
 
-  /* ---------------- Consistent icon action buttons ---------------- */
-
-  /**
-   * Render a small icon button used in table action columns.
-   * Uses the shared dataset convention: data-x4-action / data-x4-type / data-x4-idx
-   *
-   * @param {"edit"|"delete"} action
-   * @param {string} type
-   * @param {number} idx
-   * @returns {string}
-   */
-  window.x4IconBtn = function x4IconBtn(action, type, idx) {
-    const isDelete = action === "delete";
-    const cls = `iconBtn ${isDelete ? "danger" : ""}`.trim();
-    const title = isDelete ? "Delete" : "Edit";
-    const symbol = isDelete ? "🗑" : "✎";
-    return `<button class="${cls}" title="${title}" data-x4-action="${action}" data-x4-type="${window.x4EscapeAttr(type)}" data-x4-idx="${idx}">${symbol}</button>`;
-  };
-
-  /* ---------------- Blocked overlay helper ---------------- */
-
-  /**
-   * Render a consistent blocked overlay (used across views).
-   * Kept global for backwards compatibility (some views call renderBlockedOverlay directly).
-   *
-   *  {string} text
-   *  {string}
-   */
-  window.renderBlockedOverlay = function renderBlockedOverlay(text) {
-    return `
-      <div class="blockedOverlay" aria-hidden="true">
-        <div class="blockedMsg">
-          <div class="ttl">Section locked</div>
-          <div class="txt">${window.x4EscapeHtml(text || "")}</div>
-        </div>
-      </div>
-    `;
-  };
-
-  /* ---------------- Shared modal framework ----------------
-   * Used by multiple views (Servers, Services, Provisioning, ...)
-   * Keeps behavior consistent:
-   * - solid modal, semi-transparent backdrop
-   * - close via buttons or clicking backdrop
-   * - tag toggles inside modal
-   */
+  /** @type {HTMLElement|null} */
+  let lastActiveEl = null;
 
   function closeModal() {
-    $("#x4ModalBack").remove();
-    $(document).off("click.x4ModalTags");
+    // Remove delegated modal handlers to avoid stacking duplicates.
+    $(document).off("click.ffModalTags");
+    $(document).off("keydown.ffModalEsc");
+
+    const back = document.getElementById("ffModalBack");
+    if (back) {
+      try { back.remove(); } catch (_) {}
+    }
+
+    // Restore page scroll.
+    document.documentElement.classList.remove("modalOpen");
+    document.body.classList.remove("modalOpen");
+
+    // Restore focus to the element that opened the modal (best effort).
+    if (lastActiveEl && typeof lastActiveEl.focus === "function") {
+      try { lastActiveEl.focus(); } catch (_) {}
+    }
+    lastActiveEl = null;
+  }
+
+  window.downloadFile = 
+  function downloadFile(filename, data, mime = "application/octet-stream") {
+    try {
+      let blob;
+      if (data instanceof Blob) {
+        blob = data;
+      } else if (data instanceof Uint8Array || ArrayBuffer.isView(data)) {
+        blob = new Blob([data], { type: mime });
+      } else if (data instanceof ArrayBuffer) {
+        blob = new Blob([new Uint8Array(data)], { type: mime });
+      } else {
+        blob = new Blob([String(data ?? "")], { type: mime });
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || "download";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      // Delay revoke to avoid truncated downloads in some browsers
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (e) {
+      console.error(e);
+      window.toast?.critical("Download failed.");
+    }
   }
 
   function renderToggleTag(label, isOn, extraDataset = {}) {
     const on = !!isOn;
     const attrs = Object.entries(extraDataset || {})
-      .map(([k, v]) => ` data-${window.x4EscapeAttr(k)}="${window.x4EscapeAttr(v)}"`)
+      .map(([k, v]) => ` data-${window.ffEscapeAttr(k)}="${window.ffEscapeAttr(v)}"`)
       .join("");
 
     return `
       <div class="tag ${on ? "on" : "off"}" data-toggle="1"${attrs}>
-        <span class="name">${window.x4EscapeHtml(label)}</span>
+        <span class="name">${window.ffEscapeHtml(label)}</span>
         <span class="state">${on ? "✔" : "✖"}</span>
       </div>
     `;
@@ -452,15 +483,27 @@
     return out;
   }
 
-  window.X4Modal = {
+  /**
+   * Minimal modal framework used by all views.
+   *
+   * Goals:
+   * - No external dependencies (besides jQuery already used in the app)
+   * - One modal on screen at a time
+   * - Supports form-style modals (OK/Cancel) and custom HTML bodies
+   */
+  window.FFModal = {
     open({ title, bodyHtml, onSave, onOpen }) {
+      // Remember focus so we can restore it on close.
+      lastActiveEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+      // Ensure we never have two modals at once.
       closeModal();
 
       const html = `
-        <div class="modalBack" id="x4ModalBack">
+        <div class="modalBack" id="ffModalBack">
           <div class="modal" role="dialog" aria-modal="true">
             <div class="modalHd">
-              <div class="ttl">${window.x4EscapeHtml(title || "")}</div>
+              <div class="ttl">${window.ffEscapeHtml(title || "")}</div>
               <button class="secondary" id="mClose">Close</button>
             </div>
             <div class="modalBd">
@@ -476,9 +519,13 @@
 
       $("body").append(html);
 
+      // Prevent background scroll (CSS can optionally use .modalOpen).
+      document.documentElement.classList.add("modalOpen");
+      document.body.classList.add("modalOpen");
+
       $("#mClose, #mCancel").on("click", () => closeModal());
-      $("#x4ModalBack").on("click", (e) => {
-        if (e.target && e.target.id === "x4ModalBack") closeModal();
+      $("#ffModalBack").on("click", (e) => {
+        if (e.target && e.target.id === "ffModalBack") closeModal();
       });
 
       $("#mSave").on("click", () => {
@@ -497,16 +544,27 @@
       });
 
       // Tag toggles inside modal
-      $(document).on("click.x4ModalTags", "#x4ModalBack .tag[data-toggle='1']", function () {
+      $(document).on("click.ffModalTags", "#ffModalBack .tag[data-toggle='1']", function () {
         const on = $(this).hasClass("on");
         $(this).toggleClass("on", !on).toggleClass("off", on);
         $(this).find(".state").text(!on ? "✔" : "✖");
       });
 
+      // ESC closes the modal (common UX expectation).
+      $(document).on("keydown.ffModalEsc", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
       if (typeof onOpen === "function") onOpen();
 
       // Mark required labels and prepare validation UI
-      window.x4ApplyRequiredUI("#x4ModalBack");
+      window.ffApplyRequiredUI("#ffModalBack");
+
+      // Focus the first focusable control for keyboard users.
+      try {
+        const first = document.querySelector("#ffModalBack input, #ffModalBack select, #ffModalBack textarea, #ffModalBack button");
+        first?.focus?.();
+      } catch (_) {}
     },
 
     close: closeModal,

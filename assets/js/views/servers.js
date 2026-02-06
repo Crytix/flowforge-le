@@ -8,15 +8,15 @@
 
   Refactor (2026-01-29):
   - Consistent, display-only table
-  - Add/Edit via shared modal (window.X4Modal)
+  - Add/Edit via shared modal (window.FFModal)
   - Delete via icon button (right aligned)
 */
 
 (() => {
   "use strict";
 
-  const esc = (v) => window.x4EscapeHtml(v);
-  const escA = (v) => window.x4EscapeAttr(v);
+  const esc = (v) => window.ffEscapeHtml(v);
+  const escA = (v) => window.ffEscapeAttr(v);
 
   function getVlansList() {
     const c = window.CFG || {};
@@ -242,7 +242,7 @@
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: `Server details — ${s.name}`,
       bodyHtml: body,
       onSave: null
@@ -267,18 +267,18 @@
       <div class="two">
         <div>
           <label for="mSrvName">Servername</label>
-          <input id="mSrvName" required data-x4-label="Servername" value="${escA(item.name)}" placeholder="z.B. db01" />
+          <input id="mSrvName" required data-ff-label="Servername" value="${escA(item.name)}" placeholder="z.B. db01" />
         </div>
         <div>
           <label for="mSrvOctet">IP Oktett</label>
-          <input id="mSrvOctet" required data-x4-label="IP Oktett" value="${escA(item.octet)}" placeholder="z.B. 11" />
+          <input id="mSrvOctet" required data-ff-label="IP Oktett" value="${escA(item.octet)}" placeholder="z.B. 11" />
         </div>
       </div>
 
       <div class="two" style="margin-top:10px">
         <div>
           <label for="mSrvOs">OS</label>
-          <select id="mSrvOs" required data-x4-label="OS">
+          <select id="mSrvOs" required data-ff-label="OS">
             <option value="debian" ${String(item.os||"debian").toLowerCase().includes("vms") ? "" : "selected"}>Debian</option>
             <option value="openvms" ${String(item.os||"debian").toLowerCase().includes("vms") ? "selected" : ""}>OpenVMS (experimental)</option>
           </select>
@@ -299,7 +299,7 @@
 
       <div style="margin-top:10px">
         <label>Environments (Tags)</label>
-        <input type="hidden" id="mSrvEnvReq" required data-x4-label="Environments" value="${escA((item.envs||[]).join(","))}">
+        <input type="hidden" id="mSrvEnvReq" required data-ff-label="Environments" value="${escA((item.envs||[]).join(","))}">
         <div class="tagGrid" id="mSrvEnvs">
           ${renderToggleTags(allEnvTags, item.envs)}
         </div>
@@ -307,7 +307,7 @@
 
       <div style="margin-top:10px">
         <label>Networks/VLANs</label>
-        <input type="hidden" id="mSrvVlanReq" required data-x4-label="Networks/VLANs" value="${escA((item.vlans||[]).join(","))}">
+        <input type="hidden" id="mSrvVlanReq" required data-ff-label="Networks/VLANs" value="${escA((item.vlans||[]).join(","))}">
         <div class="hint small" id="mSrvVlanHint" style="margin-bottom:6px"></div>
         <div class="tagGrid" id="mSrvVlans"></div>
       </div>
@@ -324,15 +324,15 @@
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: isEdit ? "Edit server" : "Create server",
       bodyHtml: body,
       onOpen: () => {
         const renderVlans = () => {
-          const selEnvs = window.X4Modal.collectToggleTags("#mSrvEnvs");
+          const selEnvs = window.FFModal.collectToggleTags("#mSrvEnvs");
           $("#mSrvEnvReq").val(selEnvs.join(","));
           const available = getVlanNamesForEnvs(selEnvs, allVlans);
-          const current = window.X4Modal.collectToggleTags("#mSrvVlans");
+          const current = window.FFModal.collectToggleTags("#mSrvVlans");
           const keep = current.filter(v => available.includes(v));
           const act = keep.length ? keep : (item.vlans || []).filter(v => available.includes(v));
 
@@ -359,19 +359,19 @@
         // Keep required hidden in sync when VLAN tags toggle
         $(document).off("click.srvVlanReq").on("click.srvVlanReq", "#mSrvVlans .tag[data-toggle='1']", () => {
           setTimeout(() => {
-            const v = window.X4Modal.collectToggleTags("#mSrvVlans");
+            const v = window.FFModal.collectToggleTags("#mSrvVlans");
             $("#mSrvVlanReq").val(v.join(","));
           }, 0);
         });
       },
       onSave: () => {
         // sync hidden required fields
-        const envsNow = window.X4Modal.collectToggleTags("#mSrvEnvs");
-        const vlansNow = window.X4Modal.collectToggleTags("#mSrvVlans");
+        const envsNow = window.FFModal.collectToggleTags("#mSrvEnvs");
+        const vlansNow = window.FFModal.collectToggleTags("#mSrvVlans");
         $("#mSrvEnvReq").val(envsNow.join(","));
         $("#mSrvVlanReq").val(vlansNow.join(","));
 
-        const req = window.x4ValidateRequired("#x4ModalBack");
+        const req = window.ffValidateRequired("#ffModalBack");
         if (!req.ok) return req;
 
         const name = $("#mSrvName").val().trim();
@@ -382,9 +382,9 @@
           return { ok: false, msg: "Oktett muss zwischen 1 und 254 liegen." };
         }
 
-        const envs = window.X4Modal.collectToggleTags("#mSrvEnvs");
-        const vlans = window.X4Modal.collectToggleTags("#mSrvVlans");
-        const services = window.X4Modal.collectToggleTags("#mSrvSvcs");
+        const envs = window.FFModal.collectToggleTags("#mSrvEnvs");
+        const vlans = window.FFModal.collectToggleTags("#mSrvVlans");
+        const services = window.FFModal.collectToggleTags("#mSrvSvcs");
 
         const existing = isEdit ? (window.CFG.servers[editIdx] || {}) : {};
         const payload = {
@@ -440,7 +440,7 @@
   function renderToggleTags(all, active) {
     if (!all || !all.length) return `<span class="hint small">–</span>`;
     const set = new Set(active || []);
-    return all.map(t => window.X4Modal.renderToggleTag(t, set.has(t))).join("");
+    return all.map(t => window.FFModal.renderToggleTag(t, set.has(t))).join("");
   }
 
   function ensureArrays() {

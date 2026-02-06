@@ -36,13 +36,13 @@
     const items = window.CFG.services || [];
     const rows = items.map((s, idx) => `
       <tr>
-        <td>${x4EscapeHtml(s.name || "")}</td>
+        <td>${ffEscapeHtml(s.name || "")}</td>
         <td>${renderPortsSummary(s)}</td>
-        <td>${x4EscapeHtml(s.comment || "")}</td>
+        <td>${ffEscapeHtml(s.comment || "")}</td>
         <td class="actionsCol">
           <div class="rowActions">
-            ${window.x4IconBtn("edit", "svc", idx)}
-            ${window.x4IconBtn("delete", "svc", idx)}
+            <button class="iconBtn" data-ff-action="edit" data-ff-type="svc" data-ff-idx="${idx}" title="Edit">✎</button>
+            <button class="iconBtn danger" data-ff-action="delete" data-ff-type="svc" data-ff-idx="${idx}" title="Delete">🗑</button>
           </div>
         </td>
       </tr>
@@ -73,7 +73,7 @@
       <div class="tagGrid">
         ${items.map(p => `
           <div class="tag static">
-            <span class="name">${x4EscapeHtml(p.proto)}:${x4EscapeHtml(p.value)}</span>
+            <span class="name">${ffEscapeHtml(p.proto)}:${ffEscapeHtml(p.value)}</span>
           </div>
         `).join("")}
       </div>
@@ -85,9 +85,9 @@
 
     $(document)
       .off("click.servicesActions")
-      .on("click.servicesActions", "[data-x4-action][data-x4-type='svc']", function () {
-        const action = this.dataset.x4Action;
-        const idx = +this.dataset.x4Idx;
+      .on("click.servicesActions", "[data-ff-action][data-ff-type='svc']", function () {
+        const action = this.dataset.ffAction;
+        const idx = +this.dataset.ffIdx;
         if (!Number.isFinite(idx)) return;
 
         if (action === "delete") {
@@ -119,11 +119,11 @@
       <div class="two">
         <div>
           <label for="mSvcName">Name</label>
-          <input id="mSvcName" required data-x4-label="Name" value="${x4EscapeAttr(item.name)}" placeholder="z.B. Postgres" />
+          <input id="mSvcName" required data-ff-label="Name" value="${ffEscapeAttr(item.name)}" placeholder="z.B. Postgres" />
         </div>
         <div>
           <label for="mSvcComment">Comment</label>
-          <input id="mSvcComment" required data-x4-label="Comment" value="${x4EscapeAttr(item.comment)}" placeholder="e.g. database access" />
+          <input id="mSvcComment" required data-ff-label="Comment" value="${ffEscapeAttr(item.comment)}" placeholder="e.g. database access" />
         </div>
       </div>
 
@@ -146,11 +146,11 @@
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: isEdit ? "Edit service" : "Create service",
       bodyHtml: body,
       onSave: () => {
-        const req = window.x4ValidateRequired("#x4ModalBack");
+        const req = window.ffValidateRequired("#ffModalBack");
         if (!req.ok) return req;
 
         const items = collectModalPortItems();
@@ -230,12 +230,12 @@
       const proto = toProtoUpper(p.proto || "TCP");
       return `
         <div class="miniRow" style="grid-template-columns: 140px 1fr 44px; align-items:center">
-          <select required data-x4-label="Protocol (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="proto">
+          <select required data-ff-label="Protocol (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="proto">
             <option value="TCP" ${proto === "TCP" ? "selected" : ""}>TCP</option>
             <option value="UDP" ${proto === "UDP" ? "selected" : ""}>UDP</option>
             <option value="TCP/UDP" ${proto === "TCP/UDP" ? "selected" : ""}>TCP/UDP</option>
           </select>
-          <input required data-x4-label="Port/Range (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="value" value="${x4EscapeAttr(p.value || "")}" placeholder="22 | 80,443 | 20000-20100" />
+          <input required data-ff-label="Port/Range (Eintrag ${idx + 1})" data-svc-port-idx="${idx}" data-field="value" value="${ffEscapeAttr(p.value || "")}" placeholder="22 | 80,443 | 20000-20100" />
           <button class="iconBtn danger" title="Remove" data-svc-port-del="${idx}">🗑</button>
         </div>
       `;

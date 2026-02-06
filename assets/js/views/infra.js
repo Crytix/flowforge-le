@@ -4,11 +4,11 @@
   Implemented:
   - Sections stacked vertically (full width) in this order:
     1) Environments
-    2) Zonen (blocked until >=1 environment)
-    3) Netzwerke/VLANs (blocked until >=1 zone)
+    2) Zones (blocked until >=1 environment)
+    3) Networks / VLANs (blocked until >=1 zone)
     4) Firewalls (blocked until >=1 VLAN)
 
-  - Add/Edit uses a modal (shared modal: window.X4Modal.open)
+  - Add/Edit uses a modal (shared modal: window.FFModal.open)
   - Display area shows only current configuration values
   - Each row has Edit + Delete icons (right aligned)
 
@@ -22,8 +22,8 @@
 (() => {
   "use strict";
 
-  const esc = window.x4EscapeHtml;
-  const escA = window.x4EscapeAttr;
+  const esc = window.ffEscapeHtml;
+  const escA = window.ffEscapeAttr;
 
   window.renderInfraView = function renderInfraView() {
     ensureInfraArrays();
@@ -344,11 +344,11 @@
       <div class="two">
         <div>
           <label for="mEnvName">Name</label>
-          <input id="mEnvName" required data-x4-label="Name" value="${escA(item.name)}" />
+          <input id="mEnvName" required data-ff-label="Name" value="${escA(item.name)}" />
         </div>
         <div>
           <label for="mEnvTag">Tag</label>
-          <input id="mEnvTag" required data-x4-label="Tag" value="${escA(item.tag)}" placeholder="e.g. PRD" />
+          <input id="mEnvTag" required data-ff-label="Tag" value="${escA(item.tag)}" placeholder="e.g. PRD" />
         </div>
       </div>
 
@@ -364,11 +364,11 @@
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: isEdit ? "Edit environment" : "Create environment",
       bodyHtml: body,
       onSave: () => {
-        const req = window.x4ValidateRequired("#x4ModalBack");
+        const req = window.ffValidateRequired("#ffModalBack");
         if (!req.ok) return req;
 
         const n = $("#mEnvName").val().trim();
@@ -396,24 +396,24 @@
       <div class="two">
         <div>
           <label for="mZoneName">Name</label>
-          <input id="mZoneName" required data-x4-label="Name" value="${escA(item.name)}" />
+          <input id="mZoneName" required data-ff-label="Name" value="${escA(item.name)}" />
         </div>
         <div>
           <label for="mZoneTag">Tag</label>
-          <input id="mZoneTag" required data-x4-label="Tag" value="${escA(item.tag)}" placeholder="e.g. DMZ" />
+          <input id="mZoneTag" required data-ff-label="Tag" value="${escA(item.tag)}" placeholder="e.g. DMZ" />
         </div>
       </div>
 
       <div style="margin-top:10px">
         <label>Environments (Tags)</label>
-        <input type="hidden" id="mZoneEnvReq" required data-x4-label="Environments" value="${escA((item.envTags || []).join(","))}">
+        <input type="hidden" id="mZoneEnvReq" required data-ff-label="Environments" value="${escA((item.envTags || []).join(","))}">
         <div class="tagGrid" id="mZoneEnvTags">
           ${envTagsAll.map(t => renderToggleTag(t, (item.envTags || []).includes(t))).join("")}
         </div>
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: isEdit ? "Edit zone" : "Create zone",
       bodyHtml: body,
       onSave: () => {
@@ -421,7 +421,7 @@
         const sel = collectToggleTags("#mZoneEnvTags");
         $("#mZoneEnvReq").val(sel.join(","));
 
-        const req = window.x4ValidateRequired("#x4ModalBack");
+        const req = window.ffValidateRequired("#ffModalBack");
         if (!req.ok) return req;
 
         const n = $("#mZoneName").val().trim();
@@ -450,29 +450,29 @@
       <div class="two">
         <div>
           <label for="mVlanName">Name</label>
-          <input id="mVlanName" required data-x4-label="Name" value="${escA(item.name)}" />
+          <input id="mVlanName" required data-ff-label="Name" value="${escA(item.name)}" />
         </div>
         <div>
           <label for="mVlanId">VLAN ID</label>
-          <input id="mVlanId" required data-x4-label="VLAN ID" value="${escA(item.vlanId)}" placeholder="e.g. 210" />
+          <input id="mVlanId" required data-ff-label="VLAN ID" value="${escA(item.vlanId)}" placeholder="e.g. 210" />
         </div>
       </div>
 
       <div class="two" style="margin-top:10px">
         <div>
           <label for="mVlanCidr">CIDR</label>
-          <input id="mVlanCidr" required data-x4-label="CIDR" value="${escA(item.cidr)}" placeholder="e.g. 10.10.10.0/24" />
+          <input id="mVlanCidr" required data-ff-label="CIDR" value="${escA(item.cidr)}" placeholder="e.g. 10.10.10.0/24" />
         </div>
         <div>
           <label for="mVlanIface">Interface (Tag)</label>
-          <input id="mVlanIface" required data-x4-label="Interface" value="${escA(item.iface)}" placeholder="e.g. mgmt" />
+          <input id="mVlanIface" required data-ff-label="Interface" value="${escA(item.iface)}" placeholder="e.g. mgmt" />
           ${ifaceExisting}
         </div>
       </div>
 
       <div style="margin-top:10px">
         <label>Environment/Zone Auswahl (kombinierte Tags)</label>
-        <input type="hidden" id="mVlanCombosReq" required data-x4-label="Environment/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
+        <input type="hidden" id="mVlanCombosReq" required data-ff-label="Environment/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
         <div class="tagGrid" id="mVlanCombos">
           ${combos.map(c => renderToggleTag(c.label, selectedKeys.has(`${c.envTag}::${c.zoneTag}`), c.envTag, c.zoneTag)).join("")}
         </div>
@@ -489,7 +489,7 @@
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: isEdit ? "Edit VLAN" : "Create VLAN",
       bodyHtml: body,
       onOpen: () => {
@@ -505,7 +505,7 @@
         const chosen = collectComboTags("#mVlanCombos");
         $("#mVlanCombosReq").val(chosen.map(c => `${c.envTag}::${c.zoneTag}`).join(","));
 
-        const req = window.x4ValidateRequired("#x4ModalBack");
+        const req = window.ffValidateRequired("#ffModalBack");
         if (!req.ok) return req;
 
         const n = $("#mVlanName").val().trim();
@@ -541,25 +541,25 @@
     const body = `
       <div>
         <label for="mFwName">Name</label>
-        <input id="mFwName" required data-x4-label="Name" value="${escA(item.name)}" />
+        <input id="mFwName" required data-ff-label="Name" value="${escA(item.name)}" />
       </div>
       <div style="margin-top:10px">
         <label>Environment/Zone (kombiniert)</label>
-        <input type="hidden" id="mFwCombosReq" required data-x4-label="Environment/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
+        <input type="hidden" id="mFwCombosReq" required data-ff-label="Environment/Zone Kombination" value="${escA(Array.from(selectedKeys).join(","))}">
         <div class="tagGrid" id="mFwCombos">
           ${combos.map(c => renderToggleTag(c.label, selectedKeys.has(`${c.envTag}::${c.zoneTag}`), c.envTag, c.zoneTag)).join("")}
         </div>
       </div>
     `;
 
-    window.X4Modal.open({
+    window.FFModal.open({
       title: isEdit ? "Edit firewall" : "Create firewall",
       bodyHtml: body,
       onSave: () => {
         const chosen = collectComboTags("#mFwCombos");
         $("#mFwCombosReq").val(chosen.map(c => `${c.envTag}::${c.zoneTag}`).join(","));
 
-        const req = window.x4ValidateRequired("#x4ModalBack");
+        const req = window.ffValidateRequired("#ffModalBack");
         if (!req.ok) return req;
 
         const n = $("#mFwName").val().trim();
@@ -603,7 +603,7 @@
       return `
         <div class="miniRow">
           <div class="envTag">${esc(c.label)}</div>
-          <input id="gwD_${escKey}" required data-x4-label="Gateway Default (${escA(c.label)})" placeholder="Gateway Default" value="${escA(old.gwDefault || "")}">
+          <input id="gwD_${escKey}" required data-ff-label="Gateway Default (${escA(c.label)})" placeholder="Gateway Default" value="${escA(old.gwDefault || "")}">
           <input id="gwF_${escKey}" placeholder="Gateway Fallback" value="${escA(old.gwFallback || "")}">
         </div>
       `;
@@ -611,7 +611,7 @@
 
     $("#mVlanGwArea").html(rows);
     // Newly injected required fields need label marking + invalid clearing hooks
-    window.x4ApplyRequiredUI("#x4ModalBack");
+    window.ffApplyRequiredUI("#ffModalBack");
   }
 
   /* ---------------- Helpers ---------------- */

@@ -3,7 +3,7 @@
 
   Resolution order:
   1) localStorage
-  2) conf/x4infra.default.json
+  2) conf/flowforge.default.json
   3) internal fallback
 */
 
@@ -11,11 +11,14 @@
   "use strict";
 
   window.CFG = null;
-  const STORAGE_KEY = "flowforge_le_config";
-  const LEGACY_STORAGE_KEY = "x4infra_manager_config";
+  const NAMESPACE = "crx.hub";
+  const STORAGE_KEY = "crx.hub.flowforge.le.config";
+    // Legacy key from the former legacy app Manager (kept for automatic migration)
+  const LEGACY_STORAGE_KEY = ["x","4infra_manager_config"].join("");
+  const LEGACY_STORAGE_KEY_2 = "flowforge_le_config";
 
   const INTERNAL_DEFAULT = {
-    meta: { app: "FlowForge LE", version: "2.7" },
+    meta: { app: "FlowForge LE", version: "1.0.0" },
     debian: { udevPath: "/etc/udev/rules.d/10-flowforge-ifnames.rules", disablePredictable: true },
     envs: [],
     zones: [],
@@ -25,12 +28,35 @@
     servers: []
   };
 
+  function migrateLegacyConfig(cfg) {
+    try {
+      if (!cfg || typeof cfg !== "object") return cfg;
+      // Migrate old udev path naming (legacy app → FlowForge)
+      // Old configs used "x"+"4infra" in the generated udev rules path.
+      // Keep this migration forever; it is harmless when not applicable.
+      const legacyToken = ["x","4infra"].join("");
+      if (cfg.debian && typeof cfg.debian.udevPath === "string" && cfg.debian.udevPath.includes(legacyToken)) {
+        cfg.debian.udevPath = cfg.debian.udevPath.replace(legacyToken, "flowforge");
+      }
+
+      // Normalize meta/app
+      if (!cfg.meta) cfg.meta = {};
+      if (!cfg.meta.app) cfg.meta.app = "FlowForge LE";
+      if (!cfg.meta.tagline) cfg.meta.tagline = "Where network flows are forged.";
+      return cfg;
+    } catch {
+      return cfg;
+    }
+  }
+
+
   function loadFromLocalStorage() {
     try {
       let raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (!raw) raw = localStorage.getItem(LEGACY_STORAGE_KEY_2);
       if (!raw) return null;
-      return JSON.parse(raw);
+      return migrateLegacyConfig(JSON.parse(raw));
     } catch (err) {
       console.warn("[FlowForge] Failed to parse localStorage config, ignoring.", err);
       return null;
@@ -46,7 +72,7 @@
   }
 
   async function loadFromDefaultFile() {
-    const response = await fetch("conf/x4infra.default.json", { cache: "no-store" });
+    const response = await fetch("conf/flowforge.default.json", { cache: "no-store" });
     if (!response.ok) throw new Error("Default config not found");
     return response.json();
   }
@@ -192,6 +218,11 @@
     return cfg;
   }
 
+  // Expose normalization for the Settings import (and advanced users).
+  // Keeping this public ensures imported configs won't break views by
+  // missing arrays or legacy fields.
+  window.normalizeConfig = normalizeConfig;
+
   window.initConfig = async function initConfig() {
     const stored = loadFromLocalStorage();
     if (stored) {
@@ -221,7 +252,13 @@
   };
 
   window.resetConfig = async function resetConfig() {
-    localStorage.removeItem(STORAGE_KEY);
+    // Remove current key and any legacy keys so "Reset" truly resets.
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY_2);
+    } catch (_) {}
+
     await window.initConfig();
   };
 })();

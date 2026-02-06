@@ -30,8 +30,8 @@
   }
 
 
-  const esc = (v) => window.x4EscapeHtml(v);
-  const escA = (v) => window.x4EscapeAttr(v);
+  const esc = (v) => window.ffEscapeHtml(v);
+  const escA = (v) => window.ffEscapeAttr(v);
 
   window.renderProvisioningView = function renderProvisioningView() {
     const $view = $("#provisioningView");
@@ -68,15 +68,16 @@ const html = `
 
             <div class="two" style="margin-bottom:10px">
               <div>
-                <label>Modus</label>
-                <select id="provMode">
-                  <option value="single" selected>Single-Server Script</option>
-                  <option value="ansible">Ansible Playbook (alle Server)</option>
-                </select>
+                <label class="req" for="provModeVal">Mode</label>
+                <div class="ffTypeSlider" id="provModeSlider" data-active="single" style="margin-top:4px">
+                  <button type="button" data-v="single" class="on">Server</button>
+                  <button type="button" data-v="ansible">Ansible</button>
+                </div>
+                <input id="provModeVal" type="hidden" value="single" />
               </div>
               <div>
                 <label for="provEnv">Environment (single-server)</label>
-                <select id="provEnv" required data-x4-label="Environment">
+                <select id="provEnv" required data-ff-label="Environment">
                   ${envOpts || `<option value="">(no environments)</option>`}
                 </select>
                 <div class="hint small">Used for gateway/routes/DNS/NTP.</div>
@@ -87,13 +88,13 @@ const html = `
               <div class="two" style="margin-bottom:10px">
                 <div>
                   <label for="provServerSel">Server</label>
-                  <select id="provServerSel" required data-x4-label="Server">
+                  <select id="provServerSel" required data-ff-label="Server">
                     ${serverOpts || `<option value="">(keine Server definiert)</option>`}
                   </select>
                 </div>
                 <div>
                   <label for="provOsSel">OS (aus Server ableitbar)</label>
-                  <select id="provOsSel" required data-x4-label="OS">
+                  <select id="provOsSel" required data-ff-label="OS">
                     <option value="debian">Debian</option>
                     <option value="openvms">OpenVMS (experimental)</option>
                   </select>
@@ -102,13 +103,13 @@ const html = `
 
               <div class="two" style="margin-bottom:10px">
                 <div>
-                  <label for="provConfigVlan">Konfigurationsnetz (VLAN)</label>
-                  <select id="provConfigVlan" required data-x4-label="Konfigurationsnetz (VLAN)">${vlanOpts || `<option value="">(keine VLANs)</option>`}</select>
+                  <label for="provConfigVlan">Configuration network (VLAN)</label>
+                  <select id="provConfigVlan" required data-ff-label="Configuration network (VLAN)">${vlanOpts || `<option value="">(keine VLANs)</option>`}</select>
                   <div class="hint small">${hasMultiEnv ? "If multiple environments exist, the config network is requested per environment in Ansible mode." : "Used for default route and static routes."}</div>
                 </div>
                 <div>
                   <label>Debian: udev Rule Path</label>
-                  <input id="provUdevPath" value="${escA(window.CFG.debian?.udevPath || "/etc/udev/rules.d/10-x4infra-ifnames.rules")}" />
+                  <input id="provUdevPath" value="${escA(window.CFG.debian?.udevPath || "/etc/udev/rules.d/10-flowforge-ifnames.rules")}" />
                 </div>
               </div>
 
@@ -116,22 +117,22 @@ const html = `
               <div class="two" style="margin-bottom:10px">
                 <div>
                   <label for="provDnsPrimary">DNS Primary</label>
-                  <select id="provDnsPrimary" required data-x4-label="DNS Primary"></select>
+                  <select id="provDnsPrimary" required data-ff-label="DNS Primary"></select>
                 </div>
                 <div>
                   <label for="provDnsSecondary">DNS Secondary</label>
-                  <select id="provDnsSecondary" required data-x4-label="DNS Secondary"></select>
+                  <select id="provDnsSecondary" required data-ff-label="DNS Secondary"></select>
                 </div>
               </div>
 
               <div class="two" style="margin-bottom:10px">
                 <div>
                   <label for="provNtpPrimary">NTP Primary</label>
-                  <select id="provNtpPrimary" required data-x4-label="NTP Primary"></select>
+                  <select id="provNtpPrimary" required data-ff-label="NTP Primary"></select>
                 </div>
                 <div>
                   <label for="provNtpSecondary">NTP Secondary</label>
-                  <select id="provNtpSecondary" required data-x4-label="NTP Secondary"></select>
+                  <select id="provNtpSecondary" required data-ff-label="NTP Secondary"></select>
                 </div>
               </div>
 
@@ -142,15 +143,16 @@ const html = `
 
               <div class="two" style="margin-bottom:10px">
                 <div>
-                  <label>Debian: Predictable Names deaktivieren (GRUB, optional)</label>
-                  <select id="provDisablePredictable">
-                    <option value="true" ${window.CFG.debian?.disablePredictable ? "selected" : ""}>Ja</option>
-                    <option value="false" ${!window.CFG.debian?.disablePredictable ? "selected" : ""}>Nein</option>
-                  </select>
+                  <label class="req" for="provDisablePredictableVal">Debian: Disable Predictable Names (GRUB, optional)</label>
+                  <div class="ffTypeSlider" id="provDisablePredictableSlider" data-active="${(window.CFG.debian?.disablePredictable ?? true) ? "true":"false"}" style="margin-top:4px">
+                    <button type="button" data-v="true" class="${(window.CFG.debian?.disablePredictable ?? true) ? "on":""}">Yes</button>
+                    <button type="button" data-v="false" class="${(!(window.CFG.debian?.disablePredictable ?? true)) ? "on":""}">No</button>
+                  </div>
+                  <input id="provDisablePredictableVal" type="hidden" value="${(window.CFG.debian?.disablePredictable ?? true) ? "true":"false"}" />
                 </div>
                 <div>
-                  <label>Skript-Dateiname</label>
-                  <input id="provScriptName" value="x4infra-provision.sh" />
+                  <label>Script filename</label>
+                  <input id="provScriptName" value="flowforge-provision.sh" />
                 </div>
               </div>
             </div>
@@ -183,13 +185,13 @@ const html = `
             <div class="hint">Script / Playbook (Copy/Paste)</div>
           </div>
           <div class="bd">
-            <div class="x4CodeBox">
-              <a class="x4CodeCopy" href="#" data-copy-for="provOut" style="display:none">Code kopieren</a>
+            <div class="ffCodeBox">
+              <a class="ffCodeCopy" href="#" data-copy-for="provOut" style="display:none">Code kopieren</a>
               <textarea id="provOut" readonly style="min-height:560px"></textarea>
             </div>
 
             <div class="rowActions" style="justify-content:flex-end; margin-top:10px">
-              <button class="secondary" id="provZipBtn" disabled>Bundle (ZIP)</button>
+              <button class="secondary" id="provZipBtn" disabled>Download</button>
             </div>
           </div>
         </div>
@@ -220,7 +222,7 @@ const html = `
               <option value="">(select VLAN)</option>
               ${vlanOpts.replace(`value="${escA(selVlan)}"`, `value="${escA(selVlan)}" selected`)}
             </select>
-            <div class="hint small">Konfigurationsnetz</div>
+            <div class="hint small">Configuration network</div>
           </div>
           <div>
             
@@ -298,6 +300,26 @@ const html = `
     const dnsSel = resolveChosenServers(envTag, "dns");
     const ntpSel = resolveChosenServers(envTag, "ntp");
 
+    // Auto-fill per-environment DNS/NTP selections if empty
+    const listDns = roleServers("dns", envTag);
+    const listNtp = roleServers("ntp", envTag);
+    if (!dnsSel.primary && listDns.length) {
+      dnsSel.primary = listDns[0];
+      dnsSel.secondary = listDns[1] || listDns[0];
+      window.CFG.provisioning.dnsChoice[envTag] = {primary: dnsSel.primary, secondary: dnsSel.secondary};
+    } else if (dnsSel.primary && !dnsSel.secondary && listDns.length) {
+      dnsSel.secondary = listDns.find(x => x !== dnsSel.primary) || dnsSel.primary;
+      window.CFG.provisioning.dnsChoice[envTag] = {primary: dnsSel.primary, secondary: dnsSel.secondary};
+    }
+    if (!ntpSel.primary && listNtp.length) {
+      ntpSel.primary = listNtp[0];
+      ntpSel.secondary = listNtp[1] || listNtp[0];
+      window.CFG.provisioning.ntpChoice[envTag] = {primary: ntpSel.primary, secondary: ntpSel.secondary};
+    } else if (ntpSel.primary && !ntpSel.secondary && listNtp.length) {
+      ntpSel.secondary = listNtp.find(x => x !== ntpSel.primary) || ntpSel.primary;
+      window.CFG.provisioning.ntpChoice[envTag] = {primary: ntpSel.primary, secondary: ntpSel.secondary};
+    }
+
     const dns = [];
     if (dnsSel.primary) {
       const ip = serverIpOnVlan(dnsSel.primary, cfgVlanName);
@@ -345,6 +367,25 @@ const html = `
     const selDns = resolveChosenServers(envTag, "dns");
     const selNtp = resolveChosenServers(envTag, "ntp");
 
+    // Auto-fill DNS/NTP selections if empty (best effort)
+    if (!selDns.primary && listDns.length) {
+      selDns.primary = listDns[0];
+      selDns.secondary = listDns[1] || listDns[0];
+      window.CFG.provisioning.dnsChoice[envTag] = {primary: selDns.primary, secondary: selDns.secondary};
+    } else if (selDns.primary && !selDns.secondary && listDns.length) {
+      selDns.secondary = listDns.find(x => x !== selDns.primary) || selDns.primary;
+      window.CFG.provisioning.dnsChoice[envTag] = {primary: selDns.primary, secondary: selDns.secondary};
+    }
+
+    if (!selNtp.primary && listNtp.length) {
+      selNtp.primary = listNtp[0];
+      selNtp.secondary = listNtp[1] || listNtp[0];
+      window.CFG.provisioning.ntpChoice[envTag] = {primary: selNtp.primary, secondary: selNtp.secondary};
+    } else if (selNtp.primary && !selNtp.secondary && listNtp.length) {
+      selNtp.secondary = listNtp.find(x => x !== selNtp.primary) || selNtp.primary;
+      window.CFG.provisioning.ntpChoice[envTag] = {primary: selNtp.primary, secondary: selNtp.secondary};
+    }
+
     $("#provDnsPrimary").html(makeServerOptions(listDns, selDns.primary));
     $("#provDnsSecondary").html(makeServerOptions(listDns, selDns.secondary));
     $("#provNtpPrimary").html(makeServerOptions(listNtp, selNtp.primary));
@@ -352,16 +393,43 @@ const html = `
   }
 
 function bindProvisioningEvents() {
-    $("#provMode").on("change", () => {
-      const mode = $("#provMode").val();
-      $("#provSingleBox").toggleClass("hidden", mode !== "single");
-      $("#provAnsibleBox").toggleClass("hidden", mode !== "ansible");
+    // Mode slider (Server/Ansible) — default Server (single)
+    $("#provModeSlider button").on("click", function(){
+      const v = $(this).data("v");
+      $("#provModeVal").val(v);
+      const $sl = $("#provModeSlider");
+      $sl.attr("data-active", v);
+      $sl.find("button").removeClass("on");
+      $(this).addClass("on");
+
+      $("#provSingleBox").toggleClass("hidden", v !== "single");
+      $("#provAnsibleBox").toggleClass("hidden", v !== "ansible");
       $("#provOut").val("");
       $("#provZipBtn").prop("disabled", true);
-      $(".x4CodeCopy[data-copy-for='provOut']").hide();
+      $(".ffCodeCopy[data-copy-for='provOut']").hide();
     });
 
-    $("#provServerSel").on("change", () => {
+    // Apply initial mode visibility
+    (function(){
+      const v = $("#provModeVal").val() || "single";
+      $("#provSingleBox").toggleClass("hidden", v !== "single");
+      $("#provAnsibleBox").toggleClass("hidden", v !== "ansible");
+    })();
+
+    // Debian: Disable Predictable Names (GRUB) slider — default Yes
+    $("#provDisablePredictableSlider button").on("click", function(){
+      const v = String($(this).data("v"));
+      $("#provDisablePredictableVal").val(v);
+      const $sl = $("#provDisablePredictableSlider");
+      $sl.attr("data-active", v);
+      $sl.find("button").removeClass("on");
+      $(this).addClass("on");
+      window.CFG.debian = window.CFG.debian || {};
+      window.CFG.debian.disablePredictable = (v === "true");
+      window.saveConfig();
+    });
+
+$("#provServerSel").on("change", () => {
       syncOsFromServer();
     });
 
@@ -387,14 +455,14 @@ function bindProvisioningEvents() {
     const setGeneratedState = (hasOutput) => {
       $("#provZipBtn").prop("disabled", !hasOutput);
       const txt = ($("#provOut").val() || "").trim();
-      $(".x4CodeCopy[data-copy-for='provOut']").toggle(!!txt);
+      $(".ffCodeCopy[data-copy-for='provOut']").toggle(!!txt);
     };
 
     // Initially disabled until something is generated
     setGeneratedState(false);
 
     $("#provBuildBtn").on("click", () => {
-      const mode = $("#provMode").val();
+      const mode = $("#provModeVal").val();
       if (mode === "single") {
         const out = generateSingle();
         if (!out.ok) {
@@ -405,9 +473,9 @@ function bindProvisioningEvents() {
         }
 
         $("#provOut").val(out.text);
-        window.__X4PROV_BUNDLE__ = out.bundle;
+        window.__CRXHUB_PROV_BUNDLE__ = out.bundle;
         setGeneratedState(true);
-        window.toast?.info("Output erzeugt.");
+        window.toast?.info("Output generated.");
       } else {
         const out = generateAnsible();
         if (!out.ok) {
@@ -417,32 +485,33 @@ function bindProvisioningEvents() {
         }
 
         $("#provOut").val(out.text);
-        window.__X4PROV_BUNDLE__ = out.bundle;
+        window.__CRXHUB_PROV_BUNDLE__ = out.bundle;
         setGeneratedState(true);
-        window.toast?.info("Playbook erzeugt.");
+        window.toast?.info("Playbook generated.");
       }
     });
 
     // Per-textbox copy link
-    $(".x4CodeCopy[data-copy-for='provOut']").off("click").on("click", async (e) => {
+    $(".ffCodeCopy[data-copy-for='provOut']").off("click").on("click", async (e) => {
       e.preventDefault();
       const txt = ($("#provOut").val() || "").trim();
       if (!txt) return;
       try {
         await navigator.clipboard.writeText(txt);
-        window.toast?.info("Code kopiert.");
+        window.toast?.info("Code copied.");
       } catch {
         window.toast?.critical("Copy not available (browser permissions).");
       }
     });
 
     $("#provZipBtn").on("click", () => {
-      const b = window.__X4PROV_BUNDLE__;
-      if (!b) return window.toast?.warning("Generate output first.");
-      const zip = buildZipBundle(b);
-      window.downloadFile("x4infra.provisioning.bundle.zip", zip, "application/zip");
-      window.toast?.info("Bundle exportiert.");
-    });
+  const b = window.__CRXHUB_PROV_BUNDLE__;
+  if (!b) return window.toast?.warning("Generate output first.");
+  const zip = buildZipBundle(b);
+  window.downloadFile("flowforge-provisioning.zip", zip, "application/zip");
+  window.toast?.info("Download started.");
+});
+
 
     // Keep copy-link visibility in sync if output is changed programmatically
     $("#provOut").on("input", () => setGeneratedState(true));
@@ -463,7 +532,10 @@ function bindProvisioningEvents() {
     window.CFG.provisioning.dnsChoice = window.CFG.provisioning.dnsChoice || {};
     window.CFG.provisioning.ntpChoice = window.CFG.provisioning.ntpChoice || {};
     window.CFG.debian = window.CFG.debian || {};
-  
+    window.CFG.debian.udevPath = window.CFG.debian.udevPath || "/etc/udev/rules.d/10-flowforge-ifnames.rules";
+    if (typeof window.CFG.debian.disablePredictable !== "boolean") window.CFG.debian.disablePredictable = true;
+  }
+
   function renderBlockedOverlay(text) {
     return `
       <div class="blockedOverlay" aria-hidden="true">
@@ -485,14 +557,13 @@ function bindProvisioningEvents() {
     if (!serverName || !dom) return "";
     return `${serverName}.${dom}`.replaceAll("..", ".");
   }
-}
 
   /* =========================
    * Single server generation
    * ========================= */
 
   function generateSingle() {
-    const req = window.x4ValidateRequired("#provisioningView");
+    const req = window.ffValidateRequired("#provisioningView");
     if (!req.ok) return { ok:false, text:`# ERROR: ${req.msg}\n` };
 
     const serverName = $("#provServerSel").val();
@@ -519,8 +590,8 @@ function bindProvisioningEvents() {
     const { dns, ntp } = resolveDnsNtpIps(envTag, cfgVlan);
 
 
-    window.CFG.debian.udevPath = $("#provUdevPath").val().trim() || "/etc/udev/rules.d/10-x4infra-ifnames.rules";
-    window.CFG.debian.disablePredictable = $("#provDisablePredictable").val() === "true";
+    window.CFG.debian.udevPath = $("#provUdevPath").val().trim() || "/etc/udev/rules.d/10-flowforge-ifnames.rules";
+    window.CFG.debian.disablePredictable = $("#provDisablePredictableVal").val() === "true";
     window.saveConfig();
 
     const srv = (window.CFG.servers || []).find(s => s.name === serverName);
@@ -530,12 +601,12 @@ function bindProvisioningEvents() {
     let text = "";
 
     if (os === "debian") {
-      const scriptName = $("#provScriptName").val().trim() || "x4infra-provision.sh";
+      const scriptName = $("#provScriptName").val().trim() || "flowforge-provision.sh";
       text = buildDebianProvisionScript(srv, envTag, scriptName, dns, ntp, cfgVlan);
       bundle[scriptName] = text;
     } else {
       text = buildOpenVmsProvisionScript(srv, envTag, dns, ntp, cfgVlan);
-      bundle["X4INFRA_PROVISION.DCL"] = text;
+      bundle["FLOWFORGE_PROVISION.DCL"] = text;
     }
 
     return { ok:true, text, bundle };
@@ -627,7 +698,7 @@ function bindProvisioningEvents() {
     if (!fqdn) return `# ERROR: Environment "${envTag}" has no domain (FQDN required).\n`;
     const forAnsible = !!(opts && opts.forAnsible);
 
-    const udevPath = (window.CFG.debian && window.CFG.debian.udevPath) ? window.CFG.debian.udevPath : "/etc/udev/rules.d/10-x4infra-ifnames.rules";
+    const udevPath = (window.CFG.debian && window.CFG.debian.udevPath) ? window.CFG.debian.udevPath : "/etc/udev/rules.d/10-flowforge-ifnames.rules";
     const disablePredictable = !!(window.CFG.debian && window.CFG.debian.disablePredictable);
 
     const oct = parseInt(srv.octet, 10);
@@ -737,7 +808,7 @@ fi
 
 # Update /etc/hosts with FQDN (best-effort)
 if [ -n "$HOST_IP" ]; then
-  sudo cp /etc/hosts /etc/hosts.x4infra.bak 2>/dev/null || true
+  sudo cp /etc/hosts /etc/hosts.flowforge.bak 2>/dev/null || true
   # remove old entries for this host (fqdn or short)
   sudo awk '!($0 ~ ("[[:space:]]" ENVIRON["HOSTNAME_FQDN"] "([[:space:]]|$)")) && !($0 ~ ("[[:space:]]" ENVIRON["HOST_SHORT"] "([[:space:]]|$)"))' /etc/hosts | sudo tee /etc/hosts >/dev/null
   echo "$HOST_IP $HOSTNAME_FQDN $HOST_SHORT" | sudo tee -a /etc/hosts >/dev/null
@@ -745,7 +816,7 @@ fi
 
 UDEV_PATH="${udevPath}"
 RULES_TMP="$(mktemp)"
-NETCFG="/etc/network/interfaces.d/x4infra-${srv.name}.cfg"
+NETCFG="/etc/network/interfaces.d/flowforge-${srv.name}.cfg"
 
 trap 'rm -f "$RULES_TMP"' EXIT
 
@@ -925,7 +996,7 @@ echo "[FlowForge] Reboot recommended after rename: sudo reboot"
   function buildAnsibleInventory(envs, servers) {
     const lines = [];
     lines.push("# FlowForge LE — Ansible Inventory (demo)");
-    lines.push("# Hosts are listed as FQDN when possible; x4infra_name maps to CFG server name.");
+    lines.push("# Hosts are listed as FQDN when possible; flowforge_name maps to CFG server name.");
     lines.push("");
     const deb = [];
     const vms = [];
@@ -948,9 +1019,9 @@ echo "[FlowForge] Reboot recommended after rename: sudo reboot"
 
       const parts = [];
       parts.push(fqdn);
-      parts.push(`x4infra_name=${s.name}`);
-      if (envTag) parts.push(`x4infra_env=${envTag}`);
-      parts.push(`x4infra_os=${os}`);
+      parts.push(`flowforge_name=${s.name}`);
+      if (envTag) parts.push(`flowforge_env=${envTag}`);
+      parts.push(`flowforge_os=${os}`);
       if (ip) parts.push(`ansible_host=${ip}`);
 
       const line = parts.join(" ");
@@ -973,14 +1044,14 @@ echo "[FlowForge] Reboot recommended after rename: sudo reboot"
 function buildAnsiblePlaybook(envs, servers, scriptsDeb, scriptsVms) {
     const lines = [];
     lines.push("# FlowForge LE — Network Provisioning Playbook");
-    lines.push("# Inventory: host can be FQDN; set x4infra_name=<CFG server name> (see inventory.ini)");
+    lines.push("# Inventory: host can be FQDN; set flowforge_name=<CFG server name> (see inventory.ini)");
     lines.push("");
     lines.push("- name: Apply network provisioning scripts");
     lines.push("  hosts: all");
     lines.push("  become: true");
     lines.push("  gather_facts: false");
     lines.push("  vars:");
-    lines.push("    x4infra_servers:");
+    lines.push("    flowforge_servers:");
     lines.push("      # name: { os: debian|openvms, script: scripts/<name>.sh|.dcl }");
 
     for (const s of servers) {
@@ -993,30 +1064,30 @@ function buildAnsiblePlaybook(envs, servers, scriptsDeb, scriptsVms) {
     lines.push("  tasks:");
     lines.push("    - name: Fail if host not in config");
     lines.push("      fail:");
-    lines.push("        msg: \"Host '{{ inventory_hostname }}' (key={{ x4infra_key }}) not found in x4infra_servers\""); 
-    lines.push("      when: x4infra_servers[x4infra_key] is not defined");
+    lines.push("        msg: \"Host '{{ inventory_hostname }}' (key={{ flowforge_key }}) not found in flowforge_servers\""); 
+    lines.push("      when: flowforge_servers[flowforge_key] is not defined");
     lines.push("");
     lines.push("    - name: Copy Debian script");
     lines.push("      copy:");
-    lines.push("        src: \"{{ x4infra_servers[x4infra_key].script }}\"");
-    lines.push("        dest: \"/root/x4infra-provision.sh\"");
+    lines.push("        src: \"{{ flowforge_servers[flowforge_key].script }}\"");
+    lines.push("        dest: \"/root/flowforge-provision.sh\"");
     lines.push("        mode: \"0755\"");
-    lines.push("      when: x4infra_servers[x4infra_key].os == 'debian'");
+    lines.push("      when: flowforge_servers[flowforge_key].os == 'debian'");
     lines.push("");
     lines.push("    - name: Run Debian script");
-    lines.push("      command: /root/x4infra-provision.sh");
-    lines.push("      when: x4infra_servers[x4infra_key].os == 'debian'");
+    lines.push("      command: /root/flowforge-provision.sh");
+    lines.push("      when: flowforge_servers[flowforge_key].os == 'debian'");
     lines.push("");
     lines.push("    - name: Copy OpenVMS DCL (experimental)");
     lines.push("      copy:");
-    lines.push("        src: \"{{ x4infra_servers[x4infra_key].script }}\"");
-    lines.push("        dest: \"X4INFRA_PROVISION.DCL\"");
-    lines.push("      when: x4infra_servers[x4infra_key].os == 'openvms'");
+    lines.push("        src: \"{{ flowforge_servers[flowforge_key].script }}\"");
+    lines.push("        dest: \"FLOWFORGE_PROVISION.DCL\"");
+    lines.push("      when: flowforge_servers[flowforge_key].os == 'openvms'");
     lines.push("");
     lines.push("    - name: OpenVMS apply (manual)");
     lines.push("      debug:");
     lines.push("        msg: \"OpenVMS script copied. Apply manually on the host (experimental).\"");
-    lines.push("      when: x4infra_servers[x4infra_key].os == 'openvms'");
+    lines.push("      when: flowforge_servers[flowforge_key].os == 'openvms'");
     lines.push("");
     return lines.join("\n") + "\n";
   }
@@ -1031,25 +1102,121 @@ function buildAnsiblePlaybook(envs, servers, scriptsDeb, scriptsVms) {
       "- scripts/<server>.dcl  (OpenVMS, experimental)",
       "",
       "Notes:",
-      "- Inventory hostnames can be FQDN; ensure variable x4infra_name=<server name> is set (see inventory.ini).",
+      "- Inventory hostnames can be FQDN; ensure variable flowforge_name=<server name> is set (see inventory.ini).",
       "- Debian scripts perform udev interface renaming and write an ifupdown snippet.",
       "- OpenVMS scripts are skeletons and must be reviewed/applied manually.",
       ""
     ].join("\n");
   }
 
+  
   function buildZipBundle(filesMap) {
-    // Very small ZIP builder (store-only) to keep this project dependency-free.
-    // Returns a Uint8Array. (Browser downloadFile supports Blob input)
-    // For simplicity and since this is "best-effort", we fall back to plain text bundle if no implementation.
-    // NOTE: If you want a real ZIP, we can integrate a tiny zip lib later.
-    const parts = [];
-    parts.push("=== X4Infra Provisioning Bundle (pseudo-zip) ===\n");
-    for (const [path, content] of Object.entries(filesMap)) {
-      parts.push(`\n--- FILE: ${path} ---\n`);
-      parts.push(content);
+    // Minimal ZIP builder (store-only, no compression) with CRC32.
+    // Returns a Uint8Array that represents a valid ZIP archive.
+    const enc = new TextEncoder();
+
+    // CRC32 table
+    const crcTable = (() => {
+      const table = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        table[i] = c >>> 0;
+      }
+      return table;
+    })();
+
+    function crc32(u8) {
+      let c = 0xFFFFFFFF;
+      for (let i = 0; i < u8.length; i++) c = crcTable[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+      return (c ^ 0xFFFFFFFF) >>> 0;
     }
-    return parts.join("");
+
+    function u16(v) { return [v & 0xFF, (v >>> 8) & 0xFF]; }
+    function u32(v) { return [v & 0xFF, (v >>> 8) & 0xFF, (v >>> 16) & 0xFF, (v >>> 24) & 0xFF]; }
+
+    const fileEntries = [];
+    let offset = 0;
+    const localParts = [];
+
+    const names = Object.keys(filesMap || {});
+    for (const name of names) {
+      const content = String(filesMap[name] ?? "");
+      const nameBytes = enc.encode(name);
+      const dataBytes = enc.encode(content);
+      const crc = crc32(dataBytes);
+
+      const localHeader = [
+        ...u32(0x04034b50),        // Local file header signature
+        ...u16(20),                // Version needed
+        ...u16(0),                 // GP bit flag
+        ...u16(0),                 // Compression (0=store)
+        ...u16(0), ...u16(0),      // File mod time/date
+        ...u32(crc),               // CRC32
+        ...u32(dataBytes.length),  // Compressed size
+        ...u32(dataBytes.length),  // Uncompressed size
+        ...u16(nameBytes.length),  // Filename length
+        ...u16(0)                  // Extra length
+      ];
+
+      localParts.push(new Uint8Array(localHeader));
+      localParts.push(nameBytes);
+      localParts.push(dataBytes);
+
+      const entry = {
+        nameBytes,
+        crc,
+        size: dataBytes.length,
+        offset
+      };
+      fileEntries.push(entry);
+      offset += localHeader.length + nameBytes.length + dataBytes.length;
+    }
+
+    const centralParts = [];
+    let centralSize = 0;
+    for (const e of fileEntries) {
+      const centralHeader = [
+        ...u32(0x02014b50),       // Central directory signature
+        ...u16(20),               // Version made by
+        ...u16(20),               // Version needed
+        ...u16(0),                // GP bit flag
+        ...u16(0),                // Compression
+        ...u16(0), ...u16(0),     // mod time/date
+        ...u32(e.crc),
+        ...u32(e.size),
+        ...u32(e.size),
+        ...u16(e.nameBytes.length),
+        ...u16(0),                // extra
+        ...u16(0),                // comment
+        ...u16(0),                // disk number start
+        ...u16(0),                // internal attrs
+        ...u32(0),                // external attrs
+        ...u32(e.offset)
+      ];
+      centralParts.push(new Uint8Array(centralHeader));
+      centralParts.push(e.nameBytes);
+      centralSize += centralHeader.length + e.nameBytes.length;
+    }
+
+    const end = [
+      ...u32(0x06054b50),        // End of central dir signature
+      ...u16(0), ...u16(0),      // disk numbers
+      ...u16(fileEntries.length),
+      ...u16(fileEntries.length),
+      ...u32(centralSize),
+      ...u32(offset),
+      ...u16(0)                  // comment length
+    ];
+
+    // Concatenate
+    const total = offset + centralSize + end.length;
+    const out = new Uint8Array(total);
+    let p = 0;
+    for (const part of localParts) { out.set(part, p); p += part.length; }
+    for (const part of centralParts) { out.set(part, p); p += part.length; }
+    out.set(new Uint8Array(end), p);
+    return out;
   }
 
   /* =========================

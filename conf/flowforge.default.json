@@ -1,0 +1,434 @@
+{
+  "meta": {
+    "app": "FlowForge LE",
+    "author": "Andreas Schlaupitz",
+    "version": "1.0.0-demo",
+    "tagline": "Where network flows are forged.",
+    "namespace": "crx.hub",
+    "repo": "https://github.com/Crytix/flowforge-le",
+    "discord": "https://discord.gg/P8aQZ5bXfb"
+  },
+  "debian": {
+    "udevPath": "/etc/udev/rules.d/10-flowforge-ifnames.rules",
+    "disablePredictable": true
+  },
+  "envs": [
+    {
+      "name": "Development",
+      "tag": "DEV",
+      "comment": "Dev / sandbox environment",
+      "domain": "dev.example.local"
+    },
+    {
+      "name": "Testing",
+      "tag": "TST",
+      "comment": "Pre-prod testing / staging",
+      "domain": "tst.example.local"
+    },
+    {
+      "name": "Production",
+      "tag": "PRD",
+      "comment": "Production environment",
+      "domain": "prd.example.local"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Core",
+      "tag": "CORE",
+      "envTags": ["DEV", "TST", "PRD"]
+    },
+    {
+      "name": "DMZ",
+      "tag": "DMZ",
+      "envTags": ["TST", "PRD"]
+    },
+    {
+      "name": "Application",
+      "tag": "APP",
+      "envTags": ["DEV", "TST", "PRD"]
+    },
+    {
+      "name": "Database",
+      "tag": "DB",
+      "envTags": ["DEV", "TST", "PRD"]
+    },
+    {
+      "name": "Storage",
+      "tag": "STO",
+      "envTags": ["TST", "PRD"]
+    }
+  ],
+  "vlans": [
+    {
+      "name": "Management",
+      "vlanId": "30",
+      "cidr": "10.10.30.0/24",
+      "iface": "mgmt",
+      "scopes": [
+        { "envTag": "DEV", "zoneTag": "CORE", "gwDefault": "10.10.30.1", "gwFallback": "" },
+        { "envTag": "TST", "zoneTag": "CORE", "gwDefault": "10.10.30.1", "gwFallback": "10.10.30.254" },
+        { "envTag": "PRD", "zoneTag": "CORE", "gwDefault": "10.10.30.1", "gwFallback": "10.10.30.254" }
+      ]
+    },
+    {
+      "name": "Service",
+      "vlanId": "50",
+      "cidr": "10.20.50.0/24",
+      "iface": "svc",
+      "scopes": [
+        { "envTag": "DEV", "zoneTag": "APP", "gwDefault": "10.20.50.1", "gwFallback": "" },
+        { "envTag": "TST", "zoneTag": "APP", "gwDefault": "10.20.50.1", "gwFallback": "" },
+        { "envTag": "PRD", "zoneTag": "APP", "gwDefault": "10.20.50.1", "gwFallback": "10.20.50.254" }
+      ]
+    },
+    {
+      "name": "Database",
+      "vlanId": "60",
+      "cidr": "10.20.60.0/24",
+      "iface": "db",
+      "scopes": [
+        { "envTag": "DEV", "zoneTag": "DB", "gwDefault": "10.20.60.1", "gwFallback": "" },
+        { "envTag": "TST", "zoneTag": "DB", "gwDefault": "10.20.60.1", "gwFallback": "" },
+        { "envTag": "PRD", "zoneTag": "DB", "gwDefault": "10.20.60.1", "gwFallback": "10.20.60.254" }
+      ]
+    },
+    {
+      "name": "DMZ-Public",
+      "vlanId": "70",
+      "cidr": "10.20.70.0/24",
+      "iface": "dmz",
+      "scopes": [
+        { "envTag": "TST", "zoneTag": "DMZ", "gwDefault": "10.20.70.1", "gwFallback": "" },
+        { "envTag": "PRD", "zoneTag": "DMZ", "gwDefault": "10.20.70.1", "gwFallback": "10.20.70.254" }
+      ]
+    },
+    {
+      "name": "Storage",
+      "vlanId": "80",
+      "cidr": "10.30.80.0/24",
+      "iface": "sto",
+      "scopes": [
+        { "envTag": "TST", "zoneTag": "STO", "gwDefault": "10.30.80.1", "gwFallback": "" },
+        { "envTag": "PRD", "zoneTag": "STO", "gwDefault": "10.30.80.1", "gwFallback": "10.30.80.254" }
+      ]
+    },
+    {
+      "name": "Backup",
+      "vlanId": "90",
+      "cidr": "10.40.90.0/24",
+      "iface": "bkp",
+      "scopes": [
+        { "envTag": "PRD", "zoneTag": "CORE", "gwDefault": "10.40.90.1", "gwFallback": "" }
+      ]
+    }
+  ],
+  "firewalls": [
+    {
+      "name": "fw-edge",
+      "scopes": [
+        { "envTag": "TST", "zoneTag": "DMZ" },
+        { "envTag": "PRD", "zoneTag": "DMZ" }
+      ]
+    },
+    {
+      "name": "fw-core",
+      "scopes": [
+        { "envTag": "DEV", "zoneTag": "CORE" },
+        { "envTag": "TST", "zoneTag": "CORE" },
+        { "envTag": "PRD", "zoneTag": "CORE" }
+      ]
+    },
+    {
+      "name": "fw-app",
+      "scopes": [
+        { "envTag": "DEV", "zoneTag": "APP" },
+        { "envTag": "TST", "zoneTag": "APP" },
+        { "envTag": "PRD", "zoneTag": "APP" }
+      ]
+    }
+  ],
+  "services": [
+    {
+      "name": "SSH",
+      "comment": "Remote administration",
+      "portItems": [{ "proto": "TCP", "value": "22" }]
+    },
+    {
+      "name": "DNS",
+      "comment": "Domain Name System",
+      "portItems": [{ "proto": "TCP/UDP", "value": "53" }]
+    },
+    {
+      "name": "NTP",
+      "comment": "Network Time Protocol",
+      "portItems": [{ "proto": "UDP", "value": "123" }]
+    },
+    {
+      "name": "HTTP/HTTPS",
+      "comment": "Web traffic",
+      "portItems": [{ "proto": "TCP", "value": "80,443" }]
+    },
+    {
+      "name": "Tomcat",
+      "comment": "Application server",
+      "portItems": [{ "proto": "TCP", "value": "8080,8443" }]
+    },
+    {
+      "name": "PostgreSQL",
+      "comment": "Database",
+      "portItems": [{ "proto": "TCP", "value": "5432" }]
+    },
+    {
+      "name": "MariaDB",
+      "comment": "Database",
+      "portItems": [{ "proto": "TCP", "value": "3306" }]
+    },
+    {
+      "name": "SFTP",
+      "comment": "File transfer over SSH",
+      "portItems": [{ "proto": "TCP", "value": "22" }]
+    },
+    {
+      "name": "sTunnel",
+      "comment": "Secure TCP tunnel",
+      "portItems": [{ "proto": "TCP", "value": "19999" }]
+    }
+  ],
+  "provisioning": {
+    "configVlan": {
+      "DEV": "Management",
+      "TST": "Management",
+      "PRD": "Management"
+    },
+    "dnsChoice": {
+      "DEV": { "primary": "ff-dev-dns01", "secondary": "ff-dev-dns02" },
+      "TST": { "primary": "ff-tst-dns01", "secondary": "ff-tst-dns02" },
+      "PRD": { "primary": "ff-prd-dns01", "secondary": "ff-prd-dns02" }
+    },
+    "ntpChoice": {
+      "DEV": { "primary": "ff-dev-dns01", "secondary": "ff-dev-dns02" },
+      "TST": { "primary": "ff-tst-dns01", "secondary": "ff-tst-dns02" },
+      "PRD": { "primary": "ff-prd-dns01", "secondary": "ff-prd-dns02" }
+    }
+  },
+  "servers": [
+    {
+      "name": "ff-dev-dns01",
+      "os": "debian",
+      "octet": "10",
+      "envs": ["DEV"],
+      "vlans": ["Management", "Service"],
+      "services": ["SSH", "DNS", "NTP"],
+      "roles": { "dns": true, "ntp": true },
+      "routes": [
+        {
+          "dst": "10.20.60.0/24",
+          "viaVlan": "Service",
+          "gateway": "10.20.50.1",
+          "metric": 100,
+          "envTag": "DEV",
+          "comment": "Route to DB VLAN via APP gateway"
+        }
+      ],
+      "firewallRules": [
+        {
+          "dir": "in",
+          "src": "10.10.30.0/24",
+          "dst": "ff-dev-dns01",
+          "proto": "tcp",
+          "ports": "22",
+          "envTag": "DEV",
+          "comment": "Allow SSH from Management subnet"
+        }
+      ]
+    },
+    {
+      "name": "ff-dev-dns02",
+      "os": "debian",
+      "octet": "11",
+      "envs": ["DEV"],
+      "vlans": ["Management"],
+      "services": ["SSH", "DNS", "NTP"],
+      "roles": { "dns": true, "ntp": true },
+      "routes": [],
+      "firewallRules": []
+    },
+    {
+      "name": "ff-tst-dns01",
+      "os": "debian",
+      "octet": "12",
+      "envs": ["TST"],
+      "vlans": ["Management"],
+      "services": ["SSH", "DNS", "NTP"],
+      "roles": { "dns": true, "ntp": true },
+      "routes": [],
+      "firewallRules": []
+    },
+    {
+      "name": "ff-tst-dns02",
+      "os": "debian",
+      "octet": "13",
+      "envs": ["TST"],
+      "vlans": ["Management"],
+      "services": ["SSH", "DNS", "NTP"],
+      "roles": { "dns": true, "ntp": true },
+      "routes": [],
+      "firewallRules": []
+    },
+    {
+      "name": "ff-prd-dns01",
+      "os": "debian",
+      "octet": "20",
+      "envs": ["PRD"],
+      "vlans": ["Management"],
+      "services": ["SSH", "DNS", "NTP"],
+      "roles": { "dns": true, "ntp": true },
+      "routes": [],
+      "firewallRules": []
+    },
+    {
+      "name": "ff-prd-dns02",
+      "os": "debian",
+      "octet": "21",
+      "envs": ["PRD"],
+      "vlans": ["Management"],
+      "services": ["SSH", "DNS", "NTP"],
+      "roles": { "dns": true, "ntp": true },
+      "routes": [],
+      "firewallRules": []
+    },
+    {
+      "name": "ff-prd-web01",
+      "os": "debian",
+      "octet": "31",
+      "envs": ["PRD"],
+      "vlans": ["Management", "DMZ-Public"],
+      "services": ["SSH", "HTTP/HTTPS", "Tomcat"],
+      "roles": { "dns": false, "ntp": false },
+      "routes": [
+        {
+          "dst": "10.20.50.0/24",
+          "viaVlan": "DMZ-Public",
+          "gateway": "10.20.70.1",
+          "metric": 50,
+          "envTag": "PRD",
+          "comment": "Reach APP subnet through DMZ gateway"
+        }
+      ],
+      "firewallRules": [
+        {
+          "dir": "in",
+          "src": "0.0.0.0/0",
+          "dst": "ff-prd-web01",
+          "proto": "tcp",
+          "ports": "80,443",
+          "envTag": "PRD",
+          "comment": "Public web traffic"
+        },
+        {
+          "dir": "in",
+          "src": "10.10.30.0/24",
+          "dst": "ff-prd-web01",
+          "proto": "tcp",
+          "ports": "22",
+          "envTag": "PRD",
+          "comment": "Admin SSH from Management"
+        }
+      ]
+    },
+    {
+      "name": "ff-prd-app01",
+      "os": "debian",
+      "octet": "41",
+      "envs": ["PRD"],
+      "vlans": ["Management", "Service"],
+      "services": ["SSH", "Tomcat"],
+      "roles": { "dns": false, "ntp": false },
+      "routes": [
+        {
+          "dst": "10.20.60.0/24",
+          "viaVlan": "Service",
+          "gateway": "10.20.50.1",
+          "metric": 10,
+          "envTag": "PRD",
+          "comment": "DB access via Service gateway"
+        }
+      ],
+      "firewallRules": [
+        {
+          "dir": "out",
+          "src": "ff-prd-app01",
+          "dst": "10.20.60.0/24",
+          "proto": "tcp",
+          "ports": "5432",
+          "envTag": "PRD",
+          "comment": "App to PostgreSQL"
+        }
+      ]
+    },
+    {
+      "name": "ff-prd-db01",
+      "os": "debian",
+      "octet": "51",
+      "envs": ["PRD"],
+      "vlans": ["Management", "Database", "Storage"],
+      "services": ["SSH", "PostgreSQL"],
+      "roles": { "dns": false, "ntp": false },
+      "routes": [],
+      "firewallRules": [
+        {
+          "dir": "in",
+          "src": "10.20.50.0/24",
+          "dst": "ff-prd-db01",
+          "proto": "tcp",
+          "ports": "5432",
+          "envTag": "PRD",
+          "comment": "Allow PostgreSQL from Service subnet"
+        }
+      ]
+    },
+    {
+      "name": "ff-prd-bkp01",
+      "os": "debian",
+      "octet": "61",
+      "envs": ["PRD"],
+      "vlans": ["Management", "Backup"],
+      "services": ["SSH", "SFTP"],
+      "roles": { "dns": false, "ntp": false },
+      "routes": [],
+      "firewallRules": [
+        {
+          "dir": "in",
+          "src": "10.20.60.0/24",
+          "dst": "ff-prd-bkp01",
+          "proto": "tcp",
+          "ports": "22",
+          "envTag": "PRD",
+          "comment": "Backup pulls via SFTP over SSH"
+        }
+      ]
+    },
+    {
+      "name": "ff-prd-vms01",
+      "os": "openvms",
+      "octet": "70",
+      "envs": ["PRD"],
+      "vlans": ["Management"],
+      "services": ["SSH", "sTunnel"],
+      "roles": { "dns": false, "ntp": false },
+      "routes": [],
+      "firewallRules": [
+        {
+          "dir": "in",
+          "src": "10.10.30.0/24",
+          "dst": "ff-prd-vms01",
+          "proto": "tcp",
+          "ports": "22,19999",
+          "envTag": "PRD",
+          "comment": "Allow SSH + sTunnel from Management subnet"
+        }
+      ]
+    }
+  ]
+}
